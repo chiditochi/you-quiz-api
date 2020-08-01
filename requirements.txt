@@ -1,0 +1,11 @@
+# Add the required .env variable constants for the user to populate here
+
+APP_NAME=You-Quiz
+APP_PORT=3001
+
+MONGO_USERNAME=
+MONGO_PASSWORD=
+MONGO_HOSTNAME=
+MONGO_PORT=
+MONGO_DB=
+

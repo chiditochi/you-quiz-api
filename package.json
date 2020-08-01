@@ -1,0 +1,43 @@
+{
+  "name": "you-quiz-api",
+  "version": "1.0.0",
+  "description": "A quiz API built on express, node and mongodb",
+  "main": "index.js",
+  "scripts": {
+    "dev": "nodemon src/app.ts",
+    "build": "tsc -p .",
+    "start": "node dist/app.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/chiditochi/you-quiz-api.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/chiditochi/you-quiz-api/issues"
+  },
+  "homepage": "https://github.com/chiditochi/you-quiz-api#readme",
+  "devDependencies": {
+    "@types/axios": "^0.14.0",
+    "@types/bcrypt": "^3.0.0",
+    "@types/colors": "^1.2.1",
+    "@types/express": "^4.17.7",
+    "@types/formidable": "^1.0.31",
+    "@types/jsonwebtoken": "^8.5.0",
+    "@types/mongoose": "^5.7.34",
+    "nodemon": "^2.0.4",
+    "ts-node": "^8.10.2"
+  },
+  "dependencies": {
+    "axios": "^0.19.2",
+    "bcrypt": "^5.0.0",
+    "colors": "^1.4.0",
+    "express": "^4.17.1",
+    "formidable": "^1.2.2",
+    "jsonwebtoken": "^8.5.1",
+    "mongoose": "^5.9.27",
+    "tracer": "^1.1.3"
+  }
+}
