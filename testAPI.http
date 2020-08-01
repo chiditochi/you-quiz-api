@@ -1,7 +1,7 @@
 
 https://jsonplaceholder.typicode.com/users
 
-###
+### sudo kill -9 $(lsof -t -i:3001)
 
 POST https://jsonplaceholder.typicode.com/posts
 Content-type: application/json
@@ -11,3 +11,8 @@ Content-type: application/json
     "body": "bar",
     "userId": 1
 }
+
+### app apis
+GET http://localhost:3001/api/userRoles/all
+###
+GET http://localhost:3001/api/users/all

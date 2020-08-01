@@ -1,7 +1,7 @@
 import { Schema } from 'mongoose';
-import { GENDER, IUserRole } from '../utility';
+import { GENDER, ICategory } from '../utility';
 
-const UserRoleSchema = new Schema({
+const CategoriesSchema = new Schema({
     roleName: {
         type: String, required: true, unique: true
     },
@@ -9,7 +9,7 @@ const UserRoleSchema = new Schema({
         type: Schema.Types.ObjectId, required: true, ref: "User"
     },
     createdAt: {
-        type: Date, default: Date.now
+        type: Date, required: true, default: Date.now
     },
     updatedAt: {
         type: Date, default: Date.now
@@ -17,16 +17,16 @@ const UserRoleSchema = new Schema({
 
 });
 
-UserRoleSchema.pre<IUserRole>("save", function (next) {
+CategoriesSchema.pre<ICategory>("save", function (next) {
+    this.updateAt = new Date();
     this.createdAt = new Date();
+    next();
+});
+
+CategoriesSchema.pre<ICategory>("update", function (next) {
     this.updateAt = new Date();
     next();
 });
 
-UserRoleSchema.pre<IUserRole>("update", function (next) {
-    this.updateAt = new Date();
-    next();
-});
 
-
-export default UserRoleSchema;
+export default CategoriesSchema;
