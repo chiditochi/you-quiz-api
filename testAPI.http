@@ -1,0 +1,13 @@
+
+https://jsonplaceholder.typicode.com/users
+
+###
+
+POST https://jsonplaceholder.typicode.com/posts
+Content-type: application/json
+
+{
+    "title": "foo",
+    "body": "bar",
+    "userId": 1
+}

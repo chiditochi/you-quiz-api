@@ -11,7 +11,7 @@ declare namespace Express {
     }
     
     export interface Application {
-		
+		appLogger: any
 	}
 
 
