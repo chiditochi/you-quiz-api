@@ -8,8 +8,8 @@ export default function UserController(app: Application) {
 
     const getUsers = async function (req: Request, res: Response) {
         // Logger.debug('inside user controller')
-        const users = await DB.models.User.find().catch(e => Logger.error(`Error fetching users, ${e.message}`))
-        return res.json({ message: "", data: users })
+        const users = await DB.models.User.find({}).catch(e => Logger.error(`Error fetching users, ${e.message}`))
+        return res.json({ message: "", data: users });
     }
 
     return {

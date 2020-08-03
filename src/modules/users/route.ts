@@ -10,7 +10,7 @@ export default function User(app: Application, router: Router) {
 
 
     router.all('/users/*', function (req, res, next) {
-        Logger.log('inside users')
+        Logger.info('inside user routes')
         next()
     })
 

@@ -2,7 +2,7 @@
   "name": "you-quiz-api",
   "version": "1.0.0",
   "description": "A quiz API built on express, node and mongodb",
-  "main": "node dist/app.js",
+  "main": "dist/app.js",
   "scripts": {
     "dev": "nodemon src/app.ts",
     "build": "tsc -p .",
@@ -28,6 +28,8 @@
     "@types/jsonwebtoken": "^8.5.0",
     "@types/mongoose": "^5.7.34",
     "@types/morgan": "^1.9.1",
+    "@types/typescript": "^2.0.0",
+    "concurrently": "^5.2.0",
     "nodemon": "^2.0.4",
     "ts-node": "^8.10.2"
   },
@@ -42,6 +44,7 @@
     "moment": "^2.27.0",
     "mongoose": "^5.9.27",
     "morgan": "^1.10.0",
-    "tracer": "^1.1.3"
+    "tracer": "^1.1.3",
+    "typescript": "^3.9.7"
   }
 }

@@ -37,6 +37,7 @@ app.use(express.static(path.join(__dirname, "assets")));
 let server = http.createServer(app);
 // connect to db
 DB(app)
+//.then(db => Logger.log('connnected to db')).catch(e => Logger.error('Error connecting to db'))
 
 
 AppEvents(app);
@@ -44,7 +45,7 @@ AppACL(app);
 const appRoutes = AppRoutes(app)
 
 app.use('/api',
-    app.appACL.populateCurrentUser, 
+    app.appACL.populateCurrentUser,
     appRoutes);
 
 
