@@ -2,7 +2,7 @@
   "name": "you-quiz-api",
   "version": "1.0.0",
   "description": "A quiz API built on express, node and mongodb",
-  "main": "index.js",
+  "main": "node dist/app.js",
   "scripts": {
     "dev": "nodemon src/app.ts",
     "build": "tsc -p .",
