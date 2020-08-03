@@ -1,4 +1,4 @@
-{ 
+{
     "app": {
         "version": "1.0.0",
         "developer": "chiditochi@yahoo.com",
@@ -8,7 +8,6 @@
             "gender": 2,
             "role": 1,
             "isActive": true,
-            "password": "1234-admin",
             "profile": {
                 "phone": "08062201650",
                 "email": "admin@you-site.com"
@@ -22,6 +21,7 @@
     "userManagment": {
         "exp": 900000
     },
-    "category": ["test"]
-
+    "category": [
+        "test"
+    ]
 }

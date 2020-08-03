@@ -1,8 +1,10 @@
 import fs from 'fs';
-import colors from  'colors';
+import colors from 'colors';
 import path from 'path'
 import moment from 'moment';
 import mongoose from 'mongoose';
+import AppACL from './acl';
+import { NextFunction } from 'express';
 
 
 
@@ -62,7 +64,7 @@ export enum GENDER {
 };
 
 export enum USERROLE {
-    ADMIN = 1, MANAGER = 2, TEACHER =3, STUDENT = 4, USER = 5
+    ADMIN = 1, MANAGER = 2, TEACHER = 3, STUDENT = 4, USER = 5
 };
 
 export enum CATEGORYSTATUS {
@@ -145,4 +147,14 @@ export type RequiredUserCreationFields = { firstName: string, lastName: string, 
 
 export type UserLoginFields = {
     email: string, password: string
+}
+
+
+export interface AppACL {
+    // populateCurrentUser: (req: Request, res: Response, next: NextFunction) => void,
+    // ensureAdmin: (req: Request, res: Response, next: NextFunction) => void,
+    // ensureManager: (req: Request, res: Response, next: NextFunction) => void,
+    // ensureTeacher: (req: Request, res: Response, next: NextFunction) => void,
+    // ensureStudent: (req: Request, res: Response, next: NextFunction) => void,
+    // ensureRolesExist: (a: [USERROLE]) => void
 }

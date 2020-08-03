@@ -4,7 +4,7 @@ import UserRoles from "./userRoles/route";
 import User from "./users/route";
 
 
-export function AppRoutes(app: Application){
+export function AppRoutes(app: Application) {
     const router: Router = Router();
     const appEvents = app.get("AppEvents");
     const Logger = app.appLogger;
@@ -71,6 +71,9 @@ export function AppRoutes(app: Application){
     router.use(function (err: Error, req: Request, res: Response, next: NextFunction) {
         return res.status(500).send({ error: err, message: err.message });
     });
+
+
+
 
     return router;
 } 

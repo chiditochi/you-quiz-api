@@ -7,7 +7,7 @@ const {
     MONGO_DB,
     APP_NAME,
     APP_PORT
-  } = process.env;
+} = process.env;
 
 import express from 'express';
 import http from 'http';
@@ -18,6 +18,7 @@ import { AppRoutes } from './modules/routes';
 import DB from './modules/db';
 import AppEvents from './modules/appEvents';
 import { Connection } from 'mongoose';
+import AppACL from './modules/acl';
 
 
 // create app
@@ -35,26 +36,25 @@ app.use(express.static(path.join(__dirname, "assets")));
 // create http server
 let server = http.createServer(app);
 // connect to db
-// app.appDB = DB() as unknown as Connection
- DB(app)
-// app.set('appDB', DB());
+DB(app)
 
 
 AppEvents(app);
-// let appACL = AppACL(app);
+AppACL(app);
 const appRoutes = AppRoutes(app)
 
 app.use('/api',
-// appACL.populateCurrentUser, 
-appRoutes);
+    app.appACL.populateCurrentUser, 
+    appRoutes);
+
+// add default database data
+app.appEvents.emit("createAdminUser");
+// app.appEvents.emit("userRoles");
+// app.appEvents.emit("Categories");
 
 // listen on port
-server.listen(3001, ()=>{
+server.listen(3001, () => {
     app.appLogger.log(`${APP_NAME} App is running on port ${APP_PORT}`)
-    // add default database data
-    app.get("AppEvents").emit("createAdminUser");
-    app.get("AppEvents").emit("userRoles");
-    app.get("AppEvents").emit("Categories");
 
 })
 

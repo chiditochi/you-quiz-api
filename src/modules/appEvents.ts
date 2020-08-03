@@ -8,7 +8,7 @@ import UserRoleSchema from './userRoles/model';
 import * as jwt from 'jsonwebtoken';
 import { resolve } from 'dns';
 
-const { APP_SECRET } = process.env
+const { APP_SECRET, APP_ADMIN_PASSWORD } = process.env
 
 
 
@@ -18,14 +18,14 @@ const AppEvents = function (app: Application) {
     const appEvents = new EventEmitter();
     const userManagement = config.userManagment;
 
-    const generateSecret= (size:number): string =>require('crypto').randomBytes(size).toString('hex');
+    const generateSecret = (size: number): string => require('crypto').randomBytes(size).toString('hex');
 
-    async function getAdminUser(DB: Connection){
-        const adminUser = await DB.models.User.findOne({ lastName: 'admin'});
-        return adminUser._doc;
+    async function getAdminUser(DB: Connection) {
+        const adminUser = await DB.models.User.findOne({ lastName: 'admin' });
+        return adminUser ? adminUser._doc : null;
     };
 
-    async function expireToken(token:string){
+    async function expireToken(token: string) {
         // code for expiring token
         return true
     };
@@ -34,11 +34,11 @@ const AppEvents = function (app: Application) {
         const { GENDER } = Utility;
         try {
             let adminUser = await getAdminUser(DB);
-            if(adminUser == null){
+            if (adminUser == null) {
                 const configAdminUser = config.app.adminUser;
-                const hash = await DB.models.User.schema.statics.hashPassword(configAdminUser.password)
+                const hash = await DB.models.User.schema.statics.hashPassword(APP_ADMIN_PASSWORD)
                     .catch((e: { message: string; }) => { throw new Error("Error hashing Admin password: " + e.message) });
-                 adminUser = { 
+                adminUser = {
                     ...configAdminUser,
                     createdAt: new Date(),
                     gender: GENDER[configAdminUser.gender],
@@ -46,7 +46,11 @@ const AppEvents = function (app: Application) {
                 };
                 const dbAdminUser: IUser[] = await DB.models.User.create([adminUser]).catch(e => { throw new Error("Unable to create Admin user: " + e.message) });
                 Logger.warn(`adminUser ${dbAdminUser[0].profile.userName} created! ...`);
-            }else Logger.warn(`Admin user with userName '${adminUser.profile.userName}' exists`)
+
+                appEvents.emit("userRoles");
+                appEvents.emit("Categories");
+
+            } else Logger.warn(`Admin user with userName '${adminUser.profile.userName}' exists`)
         } catch (e) {
             throw new Error("Error creating AdminUser: " + (e.message || e));
         }
@@ -69,8 +73,8 @@ const AppEvents = function (app: Application) {
         const roles = getEnumList(USERROLE);
         try {
             const creator = await getAdminUser(DB);
-            const defaultUserRoles = roles.map(r=>({ roleName: r, creator: creator._id }));
-    
+            const defaultUserRoles = roles.map(r => ({ roleName: r, creator: creator._id }));
+
             const result: Utility.IUserRole[] = await DB.models.UserRole.insertMany(defaultUserRoles).catch(e => { throw new Error("Error inserting UserRoles: \n" + e.message) });
             Logger.warn(`${result.length} UserRoles inserted ...`);
         } catch (e) {
@@ -96,7 +100,7 @@ const AppEvents = function (app: Application) {
         try {
             const categoryList = config.category;
             const creator = await getAdminUser(DB);
-            const defaultCategory = categoryList.map(r=>({ roleName: r, creator: creator._id }))
+            const defaultCategory = categoryList.map(r => ({ roleName: r, creator: creator._id }))
             const result: Utility.ICategory[] = await DB.models.Category.insertMany(defaultCategory).catch(e => { throw new Error("Error inserting Categories: \n" + e.message) });
             Logger.warn(`${result.length} Categories inserted ...`);
 
@@ -193,7 +197,7 @@ const AppEvents = function (app: Application) {
 
     type JwtSigningResponse = { success: boolean, token?: string, error?: Error }
 
-    async function callJWTSign(payload: { exp: number, data: IUser }, secret: string): Promise<JwtSigningResponse>{
+    async function callJWTSign(payload: { exp: number, data: IUser }, secret: string): Promise<JwtSigningResponse> {
         return new Promise(function (resolve, reject) {
             jwt.sign({ data: payload.data }, secret, { expiresIn: payload.exp }, function (err, token) {
                 if (err) reject({ error: err, success: false });
@@ -209,13 +213,13 @@ const AppEvents = function (app: Application) {
 
     appEvents.on("generateToken", async function (payload, req: Request, res: Response) {
         const tokenPayload = { exp: userManagement.exp, data: payload };
-        const result  = 
-            await callJWTSign(tokenPayload, APP_SECRET as string )
-            .catch(e => {
-                const msg = `Error generating token for ${payload.email}`
-                Logger.error(msg)
-                res.json({ status: false, message: msg })
-            });
+        const result =
+            await callJWTSign(tokenPayload, APP_SECRET as string)
+                .catch(e => {
+                    const msg = `Error generating token for ${payload.email}`
+                    Logger.error(msg)
+                    res.json({ status: false, message: msg })
+                });
         const response = { ...payload._doc, token: (result as JwtSigningResponse).token }
         delete response.password;
         res.json({ status: true, data: response, message: 'Login successful | Token generated!' })
@@ -229,7 +233,8 @@ const AppEvents = function (app: Application) {
         next();
     })
 
-    app.set("AppEvents", appEvents);
+    // app.set("AppEvents", appEvents);
+    app.appEvents = appEvents
 };
 
 export default AppEvents;
