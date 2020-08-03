@@ -14,7 +14,9 @@ export default function User(app: Application, router: Router) {
         next()
     })
 
-    router.get('/users/all', app.appACL.ensureAdmin, Controller.getUsers)
+    // router.get('/users/all', app.appACL.ensureAdmin, Controller.getUsers)
+
+    router.get('/users/all', Controller.getUsers)
 
 
     return router;

@@ -1,0 +1,38 @@
+version: 3
+
+services:
+    app:
+        container_name: you-quiz
+        restart: always
+        build: . 
+        ports: 
+            - '80:3001'
+        links: 
+            - mongo
+        env_file: 
+            - .env 
+        environment: 
+            - APP_NAME=$APP_NAME
+            - APP_PORT=$APP_PORT
+            - APP_ADMIN_PASSWORD=$APP_ADMIN_PASSWORD
+            - MONGO_USERNAME=$MONGO_USERNAME
+            - MONGO_PASSWORD=$MONGO_PASSWORD
+            - MONGO_HOSTNAME=$MONGO_HOSTNAME
+            - MONGO_PORT=$MONGO_PORT
+            - MONGO_DB=mongo
+            - APP_EMAIL_SMTP=$APP_EMAIL_SMTP
+            - APP_EMIAL_PORT=$APP_EMIAL_PORT
+            - APP_EMAIL=$APP_EMAIL
+            - APP_EMAIL_PASSWORD=$APP_EMAIL_PASSWORD
+            - APP_SECRET=$APP_SECRET
+        volumes: 
+            - you-quiz-log:/logs
+        
+
+    db:
+        container_name: mongo
+        image: mongo 
+        ports: 
+            - '27017:27017'
+        volumes: 
+            - you-quiz-db:/data/db

@@ -47,10 +47,6 @@ app.use('/api',
     app.appACL.populateCurrentUser, 
     appRoutes);
 
-// add default database data
-app.appEvents.emit("createAdminUser");
-// app.appEvents.emit("userRoles");
-// app.appEvents.emit("Categories");
 
 // listen on port
 server.listen(3001, () => {
