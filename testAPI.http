@@ -18,30 +18,32 @@ GET http://localhost:3001/api/userRoles/all
 GET http://localhost:3001/api/userRoles/5f29d6218de5ff4a48a33a42
 ### all users
 GET http://localhost:3001/api/users/all
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7InByb2ZpbGUiOnsiZW1haWwiOiJhZ25lc3lhcGlAZ21haWwuY29tIiwidXNlck5hbWUiOiJ5LmFnbmVzIn0sImdlbmRlciI6IkZFTUFMRSIsInJvbGVzIjpbIjVmMmE4M2I1NTdlZTc3MTJlY2E0OTQ5NSJdLCJpc0FjdGl2ZSI6dHJ1ZSwiX2lkIjoiNWYyYTg1MmQ2OTdiOGMzNjM4NmFjNWUwIiwiZmlyc3ROYW1lIjoiYWduZXMiLCJsYXN0TmFtZSI6InlhcGkiLCJjcmVhdGVkQXQiOiIyMDIwLTA4LTA1VDEwOjA4OjQ1LjQxOFoiLCJ1cGRhdGVkQXQiOiIyMDIwLTA4LTA1VDEwOjA4OjQ1LjQxOFoiLCJfX3YiOjB9LCJpYXQiOjE1OTY2MjI3NzYsImV4cCI6MTU5NzUyMjc3Nn0.j-EgJNTL1ra8Pw4YP6Qe_w0SqAcf93Meq3A62qrm6Fg
+
 ###
 ### get user 5f29d6218de5ff4a48a33a41
-GET http://localhost:3001/api/users/5f29d81feda8e451c805d858
+GET http://localhost:3001/api/users/5f29e476aec06135e012fe4c
 ### add new user
 POST http://localhost:3001/api/users
 Content-Type: application/json
 
 {
-    "firstName": "tapo" ,"lastName": "moses" ,"roles": 2 ,"email": "tapomoses@gmail.com" ,"password": "tapo.moses", "gender": 1
+    "firstName": "agnes" ,"lastName": "yapi" ,"roles": 2 ,"email": "agnesyapi@gmail.com" ,"password": "agnes.yapi", "gender": 2
 }
 ### update user role
-PUT http://localhost:3001/api/users/updateRole/5f29d6218de5ff4a48a33a41
+PUT http://localhost:3001/api/users/updateRole/5f29e476aec06135e012fe4c
 Content-Type: application/json
 
 {
-    "type": 2 , "roleId": "5f29d6218de5ff4a48a33a43"
+    "type": 1 , "roleId": "5f29d6218de5ff4a48a33a42"
 }
 ### delet user
 DELETE  http://localhost:3001/api/users/5f29ed6b5e7bb624ac5f6703 
 
 ###
-{"message":"all users","data":[{"profile":{"phone":"08062201650","email":"admin@you-site.com","userName":"a.you-quiz"},"gender":"FEMALE","roles":[],"isActive":true,"_id":"5f29e476aec06135e012fe4c","firstName":"you-quiz","lastName":"admin","createdAt":"2020-08-04T22:43:02.637Z","updatedAt":"2020-08-04T22:43:02.647Z","__v":0},{"profile":{"email":"johndoe@gmail.com","userName":"d.john"},"gender":"2","roles":[{"_id":"5f29d6218de5ff4a48a33a43","roleName":"MANAGER","creator":"5f29d6218de5ff4a48a33a41"}],"isActive":false,"_id":"5f29ed6b5e7bb624ac5f6703","firstName":"john","lastName":"doe","createdAt":"2020-08-04T23:21:15.306Z","updatedAt":"2020-08-04T23:21:15.306Z","__v":0},{"profile":{"email":"tapomoses@gmail.com","userName":"m.tapo"},"gender":"MALE","roles":[{"_id":"5f29d6218de5ff4a48a33a43","roleName":"MANAGER","creator":"5f29d6218de5ff4a48a33a41"}],"isActive":false,"_id":"5f29ef5e5580994844493cfc","firstName":"tapo","lastName":"moses","createdAt":"2020-08-04T23:29:34.675Z","updatedAt":"2020-08-04T23:29:34.675Z","__v":0}]}
+
 ### user changeState
-PUT http://localhost:3001/api/users/changeState/5f29d6218de5ff4a48a33a41
+PUT http://localhost:3001/api/users/changeState/5f29ef5e5580994844493cfc
 
 
 ### user change password
@@ -80,8 +82,23 @@ Content-Type: application/json
     "roleName": "Arts"
 }
 ###
+### login and signup section
+POST http://localhost:3001/api/login
+Content-Type: application/json
+
+{
+    "email": "agnesyapi@gmail.com" ,"password": "agnes.yapi"
+}
+###
+POST http://localhost:3001/api/signup
+Content-Type: application/json
+
+{
+    "firstName": "pearl" ,"lastName": "tag" ,"roles": 4 ,"email": "pearltagn@gmail.com" ,"password": "tomgabson", "gender": 0
+}
+###
 
 5f2949a24f1bdf27083d1e5e
 GET http://localhost:3001/api/403
 
-{"message":"all users","data":[{"profile":{"phone":"08062201650","email":"admin@you-site.com","userName":"a.you-quiz"},"gender":"FEMALE","roles":[{"_id":"5f29d6218de5ff4a48a33a42","roleName":"ADMIN","creator":"5f29d6218de5ff4a48a33a41"}],"isActive":true,"_id":"5f29d6218de5ff4a48a33a41","firstName":"you-quiz","lastName":"admin","createdAt":"2020-08-04T21:41:53.855Z","updatedAt":"2020-08-04T21:41:53.863Z","__v":1}]}
+{"status":true,"data":{"profile":{"email":"agnesyapi@gmail.com","userName":"y.agnes"},"gender":"FEMALE","roles":["5f2a83b557ee7712eca49495"],"isActive":true,"_id":"5f2a852d697b8c36386ac5e0","firstName":"agnes","lastName":"yapi","createdAt":"2020-08-05T10:08:45.418Z","updatedAt":"2020-08-05T10:08:45.418Z","__v":0,"token":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7InByb2ZpbGUiOnsiZW1haWwiOiJhZ25lc3lhcGlAZ21haWwuY29tIiwidXNlck5hbWUiOiJ5LmFnbmVzIn0sImdlbmRlciI6IkZFTUFMRSIsInJvbGVzIjpbIjVmMmE4M2I1NTdlZTc3MTJlY2E0OTQ5NSJdLCJpc0FjdGl2ZSI6dHJ1ZSwiX2lkIjoiNWYyYTg1MmQ2OTdiOGMzNjM4NmFjNWUwIiwiZmlyc3ROYW1lIjoiYWduZXMiLCJsYXN0TmFtZSI6InlhcGkiLCJjcmVhdGVkQXQiOiIyMDIwLTA4LTA1VDEwOjA4OjQ1LjQxOFoiLCJ1cGRhdGVkQXQiOiIyMDIwLTA4LTA1VDEwOjA4OjQ1LjQxOFoiLCJfX3YiOjB9LCJpYXQiOjE1OTY2MjI3NzYsImV4cCI6MTU5NzUyMjc3Nn0.j-EgJNTL1ra8Pw4YP6Qe_w0SqAcf93Meq3A62qrm6Fg"},"message":"Login successful | Token generated!"}

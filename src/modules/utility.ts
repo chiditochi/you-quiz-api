@@ -178,12 +178,17 @@ export function validateCreationFields(requiredList: string[], reqObj: {}): { st
     return result;
 };
 
-export const validateCreationData =
+export const validateCreationDataKeys =
     (payload: string[], requiredFields: string[]) => requiredFields.filter(v => payload.indexOf(v) === -1);
+
+export const validateCreationDataValues =
+    (payload: any, requiredFields: string[]): string[] => {
+        return requiredFields.filter(v => payload[v] == null || payload[v]?.length === 0 || payload[v] <= 0);
+    }
 
 export type expressRequestFormFileType = Array<{ fileName: string, file: File }>
 
-export type RequiredUserCreationFields = { firstName: string, lastName: string, gender: number, roles: string, email: string, password: string };
+export type RequiredUserCreationFields = { firstName: string, lastName: string, gender: number, roles: number, email: string, password: string };
 
 export type UserLoginFields = {
     email: string, password: string

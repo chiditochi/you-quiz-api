@@ -26,7 +26,7 @@ const UserSchema = new Schema({
         type: Date, default: Date.now
     },
     isActive: {
-        type: Boolean, default: false
+        type: Boolean, default: true
     },
     password: {
         type: String, required: true, min: 7

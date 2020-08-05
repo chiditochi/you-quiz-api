@@ -23,6 +23,7 @@ export default function AppACL(app: Application) {
 
     const populateCurrentUser = function (req: Request, res: Response, next: NextFunction) {
         const token = getTokenFromRequestHeader(req);
+        Logger.debug(`Token:  ${token}`)
         if (token) appEvents.emit('verifyToken', token, req, res, next);
         else next()
     }

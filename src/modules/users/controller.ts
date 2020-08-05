@@ -1,5 +1,5 @@
 import { Application, Request, Response } from "express";
-import { IUser, ITest, getRequiredUserCreationFields, validateCreationData, getEnumValue, GENDER, USERROLE, IUserRole, UPDATETYPE } from './../utility';
+import { IUser, ITest, getRequiredUserCreationFields, validateCreationDataKeys, getEnumValue, GENDER, USERROLE, IUserRole, UPDATETYPE } from './../utility';
 import UserSchema from './model';
 
 
@@ -33,7 +33,7 @@ export default function UserController(app: Application) {
             //required fields: 'firstName,lastName,roles,email,password, gender'
             const payloadKeys = Object.keys(req.body);
             const userRequiredFieds = getRequiredUserCreationFields();
-            const result = validateCreationData(payloadKeys, userRequiredFieds);
+            const result = validateCreationDataKeys(payloadKeys, userRequiredFieds);
             if (result.length) throw new Error(`Error, ${result.join(',')} missing ...`);
             const { firstName, lastName, roles, email, password, gender, phone } = req.body;
             const validGender = getEnumValue(GENDER, gender);

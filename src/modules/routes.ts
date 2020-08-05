@@ -5,12 +5,12 @@ import User from "./users/route";
 import Test from "./tests/route";
 import Question from "./questions/route";
 import Category from "./categories/route";
-import { UserLoginFields, RequiredUserCreationFields } from "./utility";
+import { UserLoginFields, RequiredUserCreationFields, validateCreationDataKeys, validateCreationDataValues } from "./utility";
 
 
 export function AppRoutes(app: Application) {
     const router: Router = Router();
-    const appEvents = app.get("AppEvents");
+    const appEvents = app.appEvents;
     const Logger = app.appLogger;
 
 
@@ -18,10 +18,14 @@ export function AppRoutes(app: Application) {
         try {
             const { email, password } = req.body;
             const userLogin: UserLoginFields = { email, password };
-            if (email == null || password == null || password.length === 0) throw new Error(`please provide both user email and password`)
+            const requiredFields = Object.keys(userLogin);
+            const validateKeys = validateCreationDataKeys(Object.keys({ email, password }), requiredFields)
+            const validateValues = validateCreationDataValues({ email, password }, requiredFields);
+
+            if (validateKeys.length > 0 || validateValues.length > 0) throw new Error(`email and password required | invalid login credentials`)
             appEvents.emit('loginUser', userLogin, req, res);
         } catch (e) {
-            Logger.error('/login', e);
+            Logger.error('/login', e.message || e);
             res.status(400).json({ data: [], message: e.message || e });
         }
     })
@@ -59,7 +63,6 @@ export function AppRoutes(app: Application) {
         if (path === '/500') return res.status(500).send({ message: 'Server unable to process request' });
         next()
     })
-    //Handle 404 and 500 errors
     // 404
     router.use(function (req: Request, res: Response, next: NextFunction) {
         return res.status(404).send({ message: 'Route ' + req.url + ' Not found.' });
@@ -68,9 +71,6 @@ export function AppRoutes(app: Application) {
     router.use(function (err: Error, req: Request, res: Response, next: NextFunction) {
         return res.status(500).send({ error: err, message: err.message });
     });
-
-
-
 
     return router;
 } 

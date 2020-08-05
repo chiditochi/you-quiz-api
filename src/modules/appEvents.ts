@@ -4,10 +4,10 @@ import mongoose, { Connection, Document, Mongoose } from 'mongoose'
 
 import { EventEmitter } from 'events';
 import * as Utility from './utility';
-import { IUser, USERROLE, RequiredUserCreationFields, validateCreationFields, UserLoginFields, getEnumValue, IUserRole, validateCreationData } from './utility'
+import { IUser, USERROLE, RequiredUserCreationFields, validateCreationFields, UserLoginFields, getEnumValue, IUserRole, validateCreationDataKeys, validateCreationDataValues, GENDER } from './utility'
 import * as jwt from 'jsonwebtoken';
 
-const { APP_SECRET, APP_ADMIN_PASSWORD } = process.env
+const { APP_SECRET, APP_ADMIN_PASSWORD, APP_EMAIL } = process.env
 
 
 
@@ -125,27 +125,25 @@ const AppEvents = function (app: Application) {
     appEvents.on("signupUser", async function (user: RequiredUserCreationFields, req: Request, res: Response) {
         try {
             const requiredFields = ['firstName', 'lastName', 'lastName', 'roles', 'email', 'password'];
-            // const validation: { status: boolean, error: string[] } = validateCreationFields(requiredFields, user);
-            // if (!validation.status) {
-            //     const msg = validation.error.length > 1 ? 'are' : 'is';
-            //     throw new Error(`${validation.error.join()} ${msg} required!`);
-            // }
-            const { firstName, lastName, password, roles, email } = user;
-            const validateResult = validateCreationData(Object.keys(user), requiredFields);
-            if (validateResult.length > 1 || password == null || password.length === 0 || firstName.length > 0 || lastName.length > 0 || roles.length > 0) throw new Error(`some of the provided values are invalid`)
+            const validateKeys = validateCreationDataKeys(Object.keys(user), requiredFields)
+            const validateValues = validateCreationDataValues(user, requiredFields);
 
+            if (validateKeys.length > 0 || validateValues.length > 0) throw new Error(`missing properties: ${validateKeys.length === 0 ? 0 : validateKeys.join(',')} ; invalid values: ${validateValues.length === 0 ? 0 : validateValues.join(',')}`);
+
+            const { firstName, lastName, password, roles, email, gender } = user;
 
             const roleId: { _id: string } = await DB.models.UserRole
-                .findOne({ roleName: user.roles ? user.roles : USERROLE[USERROLE.USER] }, { _id: true })
+                .findOne({ roleName: getEnumValue(USERROLE, roles) }, { _id: true })
                 .catch(() => { throw new Error("Error fetching Admin role" + roleId) });
+            Logger.warn(roleId)
             const hash = await DB.models.User.schema.statics.hashPassword(user.password)
                 .catch((e: { message: String }) => { throw new Error("Error fetching Admin role" + e.message) });
 
             let newUser = {
                 createdAt: new Date(),
                 profile: { email: user.email },
-                gender: user.gender,
-                role: roleId._id,
+                gender: getEnumValue(GENDER, user.gender),
+                roles: [roleId._id],
                 firstName: firstName,
                 lastName: lastName,
                 password: hash
@@ -153,9 +151,8 @@ const AppEvents = function (app: Application) {
 
             const userDoc = new DB.models.User(newUser);
             let dbUserDoc: IUser = await userDoc.save().catch((e: any) => { throw e });
-            const msg = `User ${dbUserDoc.profile.userName} created! login with email and password!`;
+            const msg = `User ${dbUserDoc.profile.userName} created! Login with email and password!`;
             const response = { success: true, data: userDoc, message: msg };
-
             Logger.info(msg);
             res.json(response);
 
@@ -172,24 +169,24 @@ const AppEvents = function (app: Application) {
         try {
             const { email, password } = user;
             const requiredFields = ['email', 'password'];
-            const validateResult = validateCreationData(Object.keys({ email, password }), requiredFields)
+            const validateKeys = validateCreationDataKeys(Object.keys({ email, password }), requiredFields)
+            const validateValues = validateCreationDataValues({ email, password }, requiredFields);
 
-            if (validateResult.length > 1 || email == null || password == null || password.length === 0) throw new Error(`please provide valid email and password`);
-
-            // const validation: { status: boolean, error: string[] } = validateCreationFields(requiredFields, user);
-            // if (!validation.status) {
-            //     const msg = validation.error.length > 1 ? 'are' : 'is';
-            //     throw new Error(`${validation.error.join()} ${msg} required!`);
-            // }
+            if (validateKeys.length > 0 || validateValues.length > 0) throw new Error(`missing properties: ${validateKeys.length === 0 ? 0 : validateKeys.join(',')} ; invalid values: ${validateValues.length === 0 ? 0 : validateValues.join(',')}`);
 
             const query = { 'profile.email': email };
             const dbUser: IUser = await DB.models.User
                 .findOne(query)
                 .catch(() => { throw new Error(`Error fetching User with email: ${email}`) });
+            //if user isActive is false dont allow login
+            if (!dbUser.isActive) throw new Error(`Login Failed! You are not Active! Please contact the admin|manager via ${APP_EMAIL}`);
             const isPasswordValid: boolean = await DB.models.User.schema.statics.comparePassword(password, dbUser.password)
                 .catch((e: { message: String }) => { throw new Error("Error hashing user's password" + e.message) });
 
-            if (!isPasswordValid) throw new Error(`Invalid password for user ${user.email}`);
+            if (!isPasswordValid) {
+                Logger.debug(`Invalid password for user ${user.email}`)
+                throw new Error(`Invalid login credentials for user ${user.email}`);
+            }
             delete dbUser.password;
             const msg = `Login successful for user: ${user.email}`;
             Logger.info(msg);
@@ -197,7 +194,7 @@ const AppEvents = function (app: Application) {
             appEvents.emit("generateToken", dbUser, req, res);
         } catch (e) {
             Logger.error(e.message || e);
-            res.json({ success: false, data: [], message: e });
+            res.json({ success: false, data: [], message: e.message || e });
         }
     })
 
@@ -246,11 +243,21 @@ const AppEvents = function (app: Application) {
     })
 
     appEvents.on("verifyToken", async function (token: string, req: Request, res: Response, next: NextFunction) {
-        const result = await callJWTVerify(token, APP_SECRET as string).catch(e => Logger.error(e.message));
-        Logger.log('Verified Token', result.message);
-        req.currentUser = result as IUser;
-        req.isLoggedIn = Object.keys(result).length ? true : false;
-        next();
+        try {
+            //Logger.warn(`${APP_SECRET}`)
+            const result = await callJWTVerify(token, APP_SECRET as string);
+            req.currentUser = result as IUser;
+            req.isLoggedIn = Object.keys(result).length ? true : false;
+            Logger.info('Current User: ', req.currentUser, req.isLoggedIn)
+            next();
+
+        } catch (e) {
+            Logger.error(e.message || e)
+            req.currentUser = undefined;
+            req.isLoggedIn = false;
+            Logger.error('Current User: ', req.currentUser, req.isLoggedIn)
+            next();
+        }
     })
 
     // app.set("AppEvents", appEvents);
