@@ -197,3 +197,14 @@ export type UserLoginFields = {
 export function getMongooseObjectId(id: string): mongoose.Types.ObjectId {
     return mongoose.Types.ObjectId(id)
 }
+
+export interface EmailMessageOptions {
+    text: string,
+    to: string[],
+    subject: string,
+    attachment: [{
+        path?: string,
+        type?: string,
+        name?: string
+    }] | []
+}

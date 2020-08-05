@@ -3,11 +3,12 @@ import config from '../config.json';
 import mongoose, { Connection, Document, Mongoose } from 'mongoose'
 
 import { EventEmitter } from 'events';
-import * as Utility from './utility';
-import { IUser, USERROLE, RequiredUserCreationFields, validateCreationFields, UserLoginFields, getEnumValue, IUserRole, validateCreationDataKeys, validateCreationDataValues, GENDER } from './utility'
+import { IUser, USERROLE, RequiredUserCreationFields, validateCreationFields, UserLoginFields, getEnumValue, IUserRole, validateCreationDataKeys, validateCreationDataValues, GENDER, EmailMessageOptions, getEnumList, ICategory } from './utility'
 import * as jwt from 'jsonwebtoken';
+import { SMTPClient } from 'emailjs';
 
-const { APP_SECRET, APP_ADMIN_PASSWORD, APP_EMAIL } = process.env
+
+const { APP_SECRET, APP_ADMIN_PASSWORD, APP_EMAIL, APP_EMAIL_SMTP, APP_EMIAL_PORT, APP_EMAIL_PASSWORD, APP_NAME } = process.env
 
 
 
@@ -29,7 +30,6 @@ const AppEvents = function (app: Application) {
     };
 
     appEvents.on("createAdminUser", async function (): Promise<void> {
-        const { GENDER } = Utility;
         try {
             let adminUser = await getAdminUser(DB);
             if (adminUser == null) {
@@ -82,13 +82,12 @@ const AppEvents = function (app: Application) {
     }
 
     appEvents.on("addDefaultUserRoles", async function () {
-        const { USERROLE, getEnumList } = Utility;
         const roles = getEnumList(USERROLE);
         try {
             const creator = await getAdminUser(DB);
             const defaultUserRoles = roles.map(r => ({ roleName: r, creator: creator._id }));
 
-            const result: Utility.IUserRole[] = await DB.models.UserRole.insertMany(defaultUserRoles).catch(e => { throw new Error("Error inserting UserRoles: \n" + e.message) });
+            const result: IUserRole[] = await DB.models.UserRole.insertMany(defaultUserRoles).catch(e => { throw new Error("Error inserting UserRoles: \n" + e.message) });
             Logger.warn(`${result.length} UserRoles inserted ...`);
             await populateAdminRole();
         } catch (e) {
@@ -114,7 +113,7 @@ const AppEvents = function (app: Application) {
             const categoryList = config.category;
             const creator = await getAdminUser(DB);
             const defaultCategory = categoryList.map(r => ({ roleName: r, creator: creator._id }))
-            const result: Utility.ICategory[] = await DB.models.Category.insertMany(defaultCategory).catch(e => { throw new Error("Error inserting Categories: \n" + e.message) });
+            const result: ICategory[] = await DB.models.Category.insertMany(defaultCategory).catch(e => { throw new Error("Error inserting Categories: \n" + e.message) });
             Logger.warn(`${result.length} Categories inserted ...`);
 
         } catch (e) {
@@ -260,7 +259,37 @@ const AppEvents = function (app: Application) {
         }
     })
 
-    // app.set("AppEvents", appEvents);
+    appEvents.on("sendEmail", async function (opt: EmailMessageOptions) {
+        try {
+            const options = {
+                user: APP_EMAIL,
+                password: APP_EMAIL_PASSWORD,
+                host: APP_EMAIL_SMTP,
+                tls: true,
+                port: parseInt(APP_EMIAL_PORT as string),
+                timeout: 300000
+            };
+            //Logger.log(options)
+            const client = new SMTPClient(options)
+
+            const message: any = {
+                text: opt.text,
+                from: APP_EMAIL,
+                to: opt.to.join(","),
+                subject: opt.subject,
+                attachment: opt.attachment.length ? opt.attachment : []
+            };
+            //Logger.log('email to be sent: ', message)
+            return;
+            client.send(message, function (err, message) {
+                if (err) Logger.error(err);
+                else Logger.info(`Email to ${message.header.to} was sent`)
+            });
+        } catch (error) {
+            Logger.error(`Error sending email, ${error.message | error}`)
+        }
+    })
+
     app.appEvents = appEvents
 };
 

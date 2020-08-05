@@ -12,7 +12,7 @@ const {
 import express from 'express';
 import http from 'http';
 import path from 'path';
-import { getLogger } from './modules/utility';
+import { getLogger, EmailMessageOptions } from './modules/utility';
 import morgan from 'morgan';
 import { AppRoutes } from './modules/routes';
 import DB from './modules/db';
@@ -51,6 +51,26 @@ app.use('/api',
 // listen on port
 server.listen(APP_PORT, () => {
     app.appLogger.log(`${APP_NAME} App is running on port ${APP_PORT}`)
+
+    const opt: EmailMessageOptions = {
+        subject: `${APP_NAME} APP`,
+        to: ['chiditochi@yahoo.com', 'alasoharriet06@gmail.com'],
+        text: `
+        Dear Google,
+        This email was sent from the ${APP_NAME} app.
+        Please let all know that Harriet is a darling.
+        I love her always.
+        Kisses and bear hugs
+
+        Regards
+        `,
+        attachment: [{
+            path: path.join(__dirname, "assets", "you-quiz-question-template.xlsx"),
+            type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            name: `${APP_NAME}-Template.xlsx`
+        }]
+    };
+    //app.appEvents.emit('sendEmail', opt);
 })
 
 process
