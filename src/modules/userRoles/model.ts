@@ -14,7 +14,6 @@ const UserRoleSchema = new Schema({
     updatedAt: {
         type: Date, default: Date.now
     }
-
 });
 
 UserRoleSchema.pre<IUserRole>("save", function (next) {

@@ -17,3 +17,9 @@ APP_EMAIL=""
 APP_EMAIL_PASSWORD=""
 
 APP_SECRET=""
+
+-------------------------
+Needed packages
+- convert-excel-to-json
+- emailjs
+- Exceljs-lightweight

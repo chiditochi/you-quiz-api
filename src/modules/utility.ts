@@ -2,7 +2,7 @@ import fs from 'fs';
 import colors from 'colors';
 import path from 'path'
 import moment from 'moment';
-import mongoose from 'mongoose';
+import mongoose, { Schema } from 'mongoose';
 import AppACL from './acl';
 import { NextFunction } from 'express';
 
@@ -71,6 +71,9 @@ export enum CATEGORYSTATUS {
     PENDING = 1, APPROVED = 2, DECLINED = 3
 };
 
+export enum UPDATETYPE {
+    ADD = 1, DELETE = 2, UPDATE = 3
+};
 
 export function getEnumList(enumType: any): string[] {
     return Object.keys(enumType).filter(v => !isNaN(Number(v))).map(v => enumType[v]);
@@ -101,16 +104,21 @@ export interface IUserDB extends mongoose.Document {
     }
 };
 
+export const getRequiredUserCreationFields = () => 'firstName,lastName,roles,email,password,gender'.split(',');
+
 export interface IUser extends mongoose.Document {
+    userObj: Schema.Types.ObjectId[];
     [_id: string]: any
     firstName: String,
     lastName: String,
     gender: String,
-    roles: [String],
-    createdAt: Date,
-    isActive: Boolean,
+    roles: String[],
+    createdAt?: Date,
+    isActive?: Boolean,
     profile: {
-        [phone: string]: any
+        userName?: String,
+        phone?: String,
+        email: String
     }
 };
 
@@ -118,15 +126,44 @@ export interface IUserRole extends mongoose.Document {
     roleName: String,
     creator: String,
     createdAt: Date,
-    [_id: string]: any
+    updatedAt?: Date,
+    [_id: string]: any | Schema.Types.ObjectId
 };
 
 export interface ICategory extends mongoose.Document {
-    name: String,
+    roleName: String,
     creator: String,
-    createdAt: Date,
+    createdAt?: Date,
+    updatedAt?: Date,
     [_id: string]: any
 };
+
+export interface ITest extends mongoose.Document {
+    [_id: string]: any
+    creator: String,
+    duration: String,
+    isTimed?: Boolean,
+    questionCount: Number,
+    category: String,
+    createdAt?: Date,
+    updatedAt?: Date
+};
+
+export interface IQuestion extends mongoose.Document {
+    [_id: string]: any
+    test: String,
+    questions: [{
+        question: String,
+        options: [String],
+        answer: String,
+        duration: String
+    }],
+    type: String,
+    createdAt?: Date,
+    updatedAt?: Date
+};
+
+export enum QuestionType { TEXT = "TEXT", IMAGE = "IMAGE" };
 
 export function validateCreationFields(requiredList: string[], reqObj: {}): { status: boolean, error: string[] } {
     let result: { status: boolean, error: string[] } = { status: false, error: [] };
@@ -141,20 +178,17 @@ export function validateCreationFields(requiredList: string[], reqObj: {}): { st
     return result;
 };
 
+export const validateCreationData =
+    (payload: string[], requiredFields: string[]) => requiredFields.filter(v => payload.indexOf(v) === -1);
+
 export type expressRequestFormFileType = Array<{ fileName: string, file: File }>
 
-export type RequiredUserCreationFields = { firstName: string, lastName: string, gender: string, role: string, email: string, phone: string, password: string };
+export type RequiredUserCreationFields = { firstName: string, lastName: string, gender: number, roles: string, email: string, password: string };
 
 export type UserLoginFields = {
     email: string, password: string
 }
 
-
-export interface AppACL {
-    // populateCurrentUser: (req: Request, res: Response, next: NextFunction) => void,
-    // ensureAdmin: (req: Request, res: Response, next: NextFunction) => void,
-    // ensureManager: (req: Request, res: Response, next: NextFunction) => void,
-    // ensureTeacher: (req: Request, res: Response, next: NextFunction) => void,
-    // ensureStudent: (req: Request, res: Response, next: NextFunction) => void,
-    // ensureRolesExist: (a: [USERROLE]) => void
+export function getMongooseObjectId(id: string): mongoose.Types.ObjectId {
+    return mongoose.Types.ObjectId(id)
 }

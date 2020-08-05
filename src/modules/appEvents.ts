@@ -1,12 +1,11 @@
 import { Application, Request, Response, NextFunction } from 'express'
 import config from '../config.json';
-import { Connection, get } from 'mongoose'
+import mongoose, { Connection, Document, Mongoose } from 'mongoose'
+
 import { EventEmitter } from 'events';
 import * as Utility from './utility';
-import { IUser, USERROLE, RequiredUserCreationFields, validateCreationFields, IUserDB, UserLoginFields } from './utility'
-import UserRoleSchema from './userRoles/model';
+import { IUser, USERROLE, RequiredUserCreationFields, validateCreationFields, UserLoginFields, getEnumValue, IUserRole, validateCreationData } from './utility'
 import * as jwt from 'jsonwebtoken';
-import { resolve } from 'dns';
 
 const { APP_SECRET, APP_ADMIN_PASSWORD } = process.env
 
@@ -18,19 +17,18 @@ const AppEvents = function (app: Application) {
     const appEvents = new EventEmitter();
     const userManagement = config.userManagment;
 
-    const generateSecret = (size: number): string => require('crypto').randomBytes(size).toString('hex');
 
     async function getAdminUser(DB: Connection) {
         const adminUser = await DB.models.User.findOne({ lastName: 'admin' });
         return adminUser ? adminUser._doc : null;
     };
 
-    async function expireToken(token: string) {
+    async function expireToken() {
         // code for expiring token
         return true
     };
 
-    appEvents.on("createAdminUser", async function (adminUser): Promise<void> {
+    appEvents.on("createAdminUser", async function (): Promise<void> {
         const { GENDER } = Utility;
         try {
             let adminUser = await getAdminUser(DB);
@@ -68,6 +66,21 @@ const AppEvents = function (app: Application) {
         }
     })
 
+    async function populateAdminRole() {
+        try {
+            const adminRoleName = getEnumValue(USERROLE, USERROLE.ADMIN);
+            const adminRole: IUserRole = await DB.models.UserRole.findOne({ roleName: adminRoleName });
+            const adminUserEmail = config.app.adminUser.profile.email;
+            const adminUser: IUser = await DB.models.User.findOne({ "profile.email": adminUserEmail });
+            adminUser.roles.push(adminRole._id);
+            const dbAdminUser = await adminUser.save();
+            Logger.warn(`Admin user role updated to ${adminRole.roleName}`)
+
+        } catch (e) {
+            Logger.error(`Eror! admin role population failed. ${e.message || e}`);
+        }
+    }
+
     appEvents.on("addDefaultUserRoles", async function () {
         const { USERROLE, getEnumList } = Utility;
         const roles = getEnumList(USERROLE);
@@ -77,6 +90,7 @@ const AppEvents = function (app: Application) {
 
             const result: Utility.IUserRole[] = await DB.models.UserRole.insertMany(defaultUserRoles).catch(e => { throw new Error("Error inserting UserRoles: \n" + e.message) });
             Logger.warn(`${result.length} UserRoles inserted ...`);
+            await populateAdminRole();
         } catch (e) {
             Logger.error(e.message || e);
         }
@@ -96,7 +110,6 @@ const AppEvents = function (app: Application) {
     })
 
     appEvents.on("addDefaultCategory", async function () {
-        const categoryList = config.category;
         try {
             const categoryList = config.category;
             const creator = await getAdminUser(DB);
@@ -111,26 +124,30 @@ const AppEvents = function (app: Application) {
 
     appEvents.on("signupUser", async function (user: RequiredUserCreationFields, req: Request, res: Response) {
         try {
-            const requiredFields = ['firstName', 'lastName', 'gender', 'role', 'email', 'phone', 'password'];
-            const validation: { status: boolean, error: string[] } = validateCreationFields(requiredFields, user);
-            if (!validation.status) {
-                const msg = validation.error.length > 1 ? 'are' : 'is';
-                throw new Error(`${validation.error.join()} ${msg} required!`);
-            }
+            const requiredFields = ['firstName', 'lastName', 'lastName', 'roles', 'email', 'password'];
+            // const validation: { status: boolean, error: string[] } = validateCreationFields(requiredFields, user);
+            // if (!validation.status) {
+            //     const msg = validation.error.length > 1 ? 'are' : 'is';
+            //     throw new Error(`${validation.error.join()} ${msg} required!`);
+            // }
+            const { firstName, lastName, password, roles, email } = user;
+            const validateResult = validateCreationData(Object.keys(user), requiredFields);
+            if (validateResult.length > 1 || password == null || password.length === 0 || firstName.length > 0 || lastName.length > 0 || roles.length > 0) throw new Error(`some of the provided values are invalid`)
+
 
             const roleId: { _id: string } = await DB.models.UserRole
-                .findOne({ roleName: user.role ? user.role : USERROLE[USERROLE.USER] }, { _id: true })
-                .catch(e => { throw new Error("Error fetching Admin role" + roleId) });
+                .findOne({ roleName: user.roles ? user.roles : USERROLE[USERROLE.USER] }, { _id: true })
+                .catch(() => { throw new Error("Error fetching Admin role" + roleId) });
             const hash = await DB.models.User.schema.statics.hashPassword(user.password)
                 .catch((e: { message: String }) => { throw new Error("Error fetching Admin role" + e.message) });
 
             let newUser = {
                 createdAt: new Date(),
-                profile: { email: user.email, phone: user.phone },
+                profile: { email: user.email },
                 gender: user.gender,
                 role: roleId._id,
-                firstName: user.firstName,
-                lastName: user.lastName,
+                firstName: firstName,
+                lastName: lastName,
                 password: hash
             };
 
@@ -155,16 +172,20 @@ const AppEvents = function (app: Application) {
         try {
             const { email, password } = user;
             const requiredFields = ['email', 'password'];
-            const validation: { status: boolean, error: string[] } = validateCreationFields(requiredFields, user);
-            if (!validation.status) {
-                const msg = validation.error.length > 1 ? 'are' : 'is';
-                throw new Error(`${validation.error.join()} ${msg} required!`);
-            }
+            const validateResult = validateCreationData(Object.keys({ email, password }), requiredFields)
+
+            if (validateResult.length > 1 || email == null || password == null || password.length === 0) throw new Error(`please provide valid email and password`);
+
+            // const validation: { status: boolean, error: string[] } = validateCreationFields(requiredFields, user);
+            // if (!validation.status) {
+            //     const msg = validation.error.length > 1 ? 'are' : 'is';
+            //     throw new Error(`${validation.error.join()} ${msg} required!`);
+            // }
 
             const query = { 'profile.email': email };
             const dbUser: IUser = await DB.models.User
                 .findOne(query)
-                .catch(e => { throw new Error(`Error fetching User with email: ${email}`) });
+                .catch(() => { throw new Error(`Error fetching User with email: ${email}`) });
             const isPasswordValid: boolean = await DB.models.User.schema.statics.comparePassword(password, dbUser.password)
                 .catch((e: { message: String }) => { throw new Error("Error hashing user's password" + e.message) });
 
@@ -180,12 +201,11 @@ const AppEvents = function (app: Application) {
         }
     })
 
-    appEvents.on("logoutUser", async function (user: RequiredUserCreationFields, req: Request, res: Response) {
+    appEvents.on("logoutUser", async function (user: RequiredUserCreationFields, req: Request) {
         try {
             const userName = req.currentUser as IUser;
             req.currentUser = undefined;
             req.isLoggedIn = false;
-            const r = await expireToken(req.token)
             const msg = `User ${userName.profile.userName} logged out!`
             Logger.warn(msg);
             return { success: true, data: {}, message: msg }
@@ -215,7 +235,7 @@ const AppEvents = function (app: Application) {
         const tokenPayload = { exp: userManagement.exp, data: payload };
         const result =
             await callJWTSign(tokenPayload, APP_SECRET as string)
-                .catch(e => {
+                .catch(() => {
                     const msg = `Error generating token for ${payload.email}`
                     Logger.error(msg)
                     res.json({ status: false, message: msg })

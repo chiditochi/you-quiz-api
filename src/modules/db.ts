@@ -1,10 +1,12 @@
 import { Application } from "express";
 import { Connection, Mongoose } from "mongoose";
-import { IUser, IUserRole, ICategory } from "./utility";
+import { IUser, IUserRole, ICategory, ITest, IQuestion } from "./utility";
 import UserSchema from "./users/model";
 import UserRoleSchema from "./userRoles/model";
 import CategoriesSchema from "./categories/model";
 import { Logger } from '../app';
+import TestSchema from './tests/model';
+import QuestionSchema from './questions/model';
 
 const {
     MONGO_USERNAME,
@@ -40,9 +42,13 @@ export default async function DB(app: Application) {
     Logger.info(`DB appURI: ${appDBURI}`);
     mongoose.connection.on('connected', () => {
         Logger.log(`connected to ${MONGO_DB} Database`)
+
         mongoose.connection.model<IUser>('User', UserSchema);
         mongoose.connection.model<IUserRole>('UserRole', UserRoleSchema);
         mongoose.connection.model<ICategory>('Category', CategoriesSchema);
+        mongoose.connection.model<ITest>('Test', TestSchema);
+        mongoose.connection.model<IQuestion>('Question', QuestionSchema);
+
         app.appEvents.emit("createAdminUser");
     })
 

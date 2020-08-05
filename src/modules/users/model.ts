@@ -1,8 +1,10 @@
 import { Schema, Types } from 'mongoose';
 
-import { GENDER, USERROLE } from '../utility';
+import { GENDER, USERROLE, getEnumList } from '../utility';
 import bcrypt from 'bcryptjs';
 import { IUser } from './../utility';
+import { Logger } from '../../app';
+import User from './route';
 
 const UserSchema = new Schema({
     firstName: {
@@ -12,7 +14,7 @@ const UserSchema = new Schema({
         type: String, required: true
     },
     gender: {
-        type: String, required: true, default: GENDER[GENDER.MALE]
+        type: String, required: true, default: GENDER[GENDER.MALE], enum: getEnumList(GENDER)
     },
     roles: [{
         type: Schema.Types.ObjectId, ref: "UserRole"
@@ -27,13 +29,13 @@ const UserSchema = new Schema({
         type: Boolean, default: false
     },
     password: {
-        type: String, required: true
+        type: String, required: true, min: 7
     },
     profile: {
         userName: {
             type: String, default: function () { this.lastName[0].toLowerCase() + "." + this.firstName.toLowerCase() }
         },
-        phone: { type: String, required: true },
+        phone: { type: String },
         email: { type: String, unique: true }
     }
 
@@ -58,7 +60,8 @@ UserSchema.methods.toJSON = function () {
 }
 
 UserSchema.statics.hashPassword = async function (password: string): Promise<string> {
-    return await bcrypt.hash(password, 10)
+    Logger.info(password.length >= UserSchema.obj.password.min)
+    return password.length >= UserSchema.obj.password.min ? await bcrypt.hash(password, 10) : '';
 }
 
 UserSchema.statics.comparePassword = async function (password: string, hash: string): Promise<boolean> {

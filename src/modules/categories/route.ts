@@ -4,18 +4,20 @@ import UserRoleController from './controller';
 
 
 
-export default function Categories(app: Application, router: Router){
+export default function Category(app: Application, router: Router) {
     const Logger = app.appLogger;
     const controller = UserRoleController(app);
 
-    router.all('/categories/*', function(req, res, next){
+    router.all('/category/*', function (req, res, next) {
         Logger.log('inside categories')
         next()
     })
 
-    router.get('/categories/all', function(req, res, next){
-        return res.json({ message: 'categories', data: []})
-    })
+    router.get('/category/all', controller.getCategories)
+    router.get('/category/:id', controller.getCategory)
+    router.post('/category', controller.addCategory)
+    router.put('/category/:id', controller.updateCategory)
+    router.delete('/category/:id', controller.removeCategory)
 
 
     return router;

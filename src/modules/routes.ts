@@ -2,6 +2,10 @@ import { Application, NextFunction, Router, Response, Request } from "express";
 import path from 'path';
 import UserRoles from "./userRoles/route";
 import User from "./users/route";
+import Test from "./tests/route";
+import Question from "./questions/route";
+import Category from "./categories/route";
+import { UserLoginFields, RequiredUserCreationFields } from "./utility";
 
 
 export function AppRoutes(app: Application) {
@@ -10,30 +14,28 @@ export function AppRoutes(app: Application) {
     const Logger = app.appLogger;
 
 
+    router.post('/login', async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            const { email, password } = req.body;
+            const userLogin: UserLoginFields = { email, password };
+            if (email == null || password == null || password.length === 0) throw new Error(`please provide both user email and password`)
+            appEvents.emit('loginUser', userLogin, req, res);
+        } catch (e) {
+            Logger.error('/login', e);
+            res.status(400).json({ data: [], message: e.message || e });
+        }
+    })
 
-
-
-    // router.post('/login', async (req: Request, res: Response, next: NextFunction) => {
-    //     try {
-    //         const { email, password } = req.body;
-    //         const userLogin: UserLoginFields = { email, password };
-    //         appEvents.emit('loginUser', userLogin, req, res);
-    //     } catch (error) {
-    //         Logger.error('/login', error);
-    //         res.status(400).json({ data: [], message: error });
-    //     }
-    // })
-
-    // router.post('/signup', async (req: Request, res: Response, next: NextFunction) => {
-    //     try {
-    //         const { firstName, lastName, gender, phone, role, email, password }: RequiredUserCreationFields = req.body;
-    //         const signupUser: RequiredUserCreationFields = { firstName, lastName, gender, phone, role, email, password }
-    //         appEvents.emit('signupUser', signupUser, req, res);
-    //     } catch (error) {
-    //         Logger.error('signup: ', error);
-    //         res.status(400).json({ success: error.status, data: [], message: error });
-    //     }
-    // });
+    router.post('/signup', async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            const { firstName, lastName, gender, roles, email, password }: RequiredUserCreationFields = req.body;
+            const signupUser: RequiredUserCreationFields = { firstName, lastName, gender, roles, email, password }
+            appEvents.emit('signupUser', signupUser, req, res);
+        } catch (error) {
+            Logger.error('signup: ', error);
+            res.status(400).json({ success: error.status, data: [], message: error });
+        }
+    });
 
     // router.post('/logout', async function (req: Request, res: Response, next: NextFunction) {
     //     const token = req.body.token;
@@ -43,16 +45,11 @@ export function AppRoutes(app: Application) {
     // });
 
     //mount api routes
-    // UserRoutes(app, router);
-    // //router.use(UserRouter)
-    // UserRoleRoutes(app, router);
-    // PortfolioCategoryRoutes(app, router);
-    // PortfolioRoutes(app, router);
-    // AdvertItemRoutes(app, router);
-
-    // router.use('/userRoles', UserRoles(app, router))
+    Category(app, router);
     UserRoles(app, router);
     User(app, router);
+    Test(app, router);
+    Question(app, router);
 
     router.get('*', (req: Request, res: Response, next: NextFunction) => {
         const path = req.path;

@@ -14,7 +14,74 @@ Content-type: application/json
 
 ### app apis
 GET http://localhost:3001/api/userRoles/all
-###
+### a role
+GET http://localhost:3001/api/userRoles/5f29d6218de5ff4a48a33a42
+### all users
 GET http://localhost:3001/api/users/all
 ###
+### get user 5f29d6218de5ff4a48a33a41
+GET http://localhost:3001/api/users/5f29d81feda8e451c805d858
+### add new user
+POST http://localhost:3001/api/users
+Content-Type: application/json
+
+{
+    "firstName": "tapo" ,"lastName": "moses" ,"roles": 2 ,"email": "tapomoses@gmail.com" ,"password": "tapo.moses", "gender": 1
+}
+### update user role
+PUT http://localhost:3001/api/users/updateRole/5f29d6218de5ff4a48a33a41
+Content-Type: application/json
+
+{
+    "type": 2 , "roleId": "5f29d6218de5ff4a48a33a43"
+}
+### delet user
+DELETE  http://localhost:3001/api/users/5f29ed6b5e7bb624ac5f6703 
+
+###
+{"message":"all users","data":[{"profile":{"phone":"08062201650","email":"admin@you-site.com","userName":"a.you-quiz"},"gender":"FEMALE","roles":[],"isActive":true,"_id":"5f29e476aec06135e012fe4c","firstName":"you-quiz","lastName":"admin","createdAt":"2020-08-04T22:43:02.637Z","updatedAt":"2020-08-04T22:43:02.647Z","__v":0},{"profile":{"email":"johndoe@gmail.com","userName":"d.john"},"gender":"2","roles":[{"_id":"5f29d6218de5ff4a48a33a43","roleName":"MANAGER","creator":"5f29d6218de5ff4a48a33a41"}],"isActive":false,"_id":"5f29ed6b5e7bb624ac5f6703","firstName":"john","lastName":"doe","createdAt":"2020-08-04T23:21:15.306Z","updatedAt":"2020-08-04T23:21:15.306Z","__v":0},{"profile":{"email":"tapomoses@gmail.com","userName":"m.tapo"},"gender":"MALE","roles":[{"_id":"5f29d6218de5ff4a48a33a43","roleName":"MANAGER","creator":"5f29d6218de5ff4a48a33a41"}],"isActive":false,"_id":"5f29ef5e5580994844493cfc","firstName":"tapo","lastName":"moses","createdAt":"2020-08-04T23:29:34.675Z","updatedAt":"2020-08-04T23:29:34.675Z","__v":0}]}
+### user changeState
+PUT http://localhost:3001/api/users/changeState/5f29d6218de5ff4a48a33a41
+
+
+### user change password
+PUT http://localhost:3001/api/users/changePassword/5f29d81feda8e451c805d858
+Content-Type: application/json
+
+{
+    "password": "john3doe"
+}
+###
+### TEST Collection
+GET http://localhost:3001/api/test/all
+### a test
+GET http://localhost:3001/api/test/5f28632a1991f14bb8b66fbc
+###
+### Category Collection
+GET http://localhost:3001/api/category/all
+### a test
+GET http://localhost:3001/api/category/5f28632a1991f14bb8b66fbd
+### a test
+DELETE  http://localhost:3001/api/category/5f294e22a087fd48ec6cea23
+
+### a test
+POST http://localhost:3001/api/category
+Content-Type: application/json
+
+{
+    "roleName": "T",
+    "creatorId" : "5f28632a1991f14bb8b66fbc"
+}
+###
+PUT http://localhost:3001/api/category/5f294e22a087fd48ec6cea23
+Content-Type: application/json
+
+{
+    "roleName": "Arts"
+}
+###
+
+5f2949a24f1bdf27083d1e5e
 GET http://localhost:3001/api/403
+
+{"message":"all users","data":[{"profile":{"phone":"08062201650","email":"admin@you-site.com","userName":"a.you-quiz"},"gender":"FEMALE","roles":[{"_id":"5f29d6218de5ff4a48a33a42","roleName":"ADMIN","creator":"5f29d6218de5ff4a48a33a41"}],"isActive":true,"_id":"5f29d6218de5ff4a48a33a41","firstName":"you-quiz","lastName":"admin","createdAt":"2020-08-04T21:41:53.855Z","updatedAt":"2020-08-04T21:41:53.863Z","__v":1}]}
