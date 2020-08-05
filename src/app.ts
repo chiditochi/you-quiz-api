@@ -32,7 +32,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(morgan('short'))
 app.use(express.static(path.join(__dirname, "assets")));
-
+//Logger.warn(path.join(__dirname, "assets"))
 // create http server
 let server = http.createServer(app);
 // connect to db
@@ -48,13 +48,10 @@ app.use('/api',
     app.appACL.populateCurrentUser,
     appRoutes);
 
-
 // listen on port
-server.listen(3001, () => {
+server.listen(APP_PORT, () => {
     app.appLogger.log(`${APP_NAME} App is running on port ${APP_PORT}`)
-
 })
-
 
 process
     .on('unhandledRejection', (reason, p) => {
