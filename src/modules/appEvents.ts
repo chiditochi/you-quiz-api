@@ -259,6 +259,15 @@ const AppEvents = function (app: Application) {
         }
     })
 
+    function getHtmlData(content: string): string {
+        return `
+        <div style='background:aliceblue; line-height: 1.5; text-align: justify; font-size: .9em;'>
+            ${content}
+            <br/><br/>
+        From ${APP_NAME} Admin  | <small style='color:red'>${new Date().toDateString()}</small>
+        </div>
+        `;
+    }
     appEvents.on("sendEmail", async function (opt: EmailMessageOptions) {
         try {
             const options = {
@@ -271,7 +280,6 @@ const AppEvents = function (app: Application) {
             };
             //Logger.log(options)
             const client = new SMTPClient(options)
-
             const message: any = {
                 text: opt.text,
                 from: APP_EMAIL,
@@ -279,7 +287,12 @@ const AppEvents = function (app: Application) {
                 subject: opt.subject,
                 attachment: opt.attachment.length ? opt.attachment : []
             };
-            //Logger.log('email to be sent: ', message)
+
+            if (opt.html) message.attachment.push({
+                data: getHtmlData(opt.html), alternative: true
+            })
+
+            Logger.log('email to be sent: ', message)
             return;
             client.send(message, function (err, message) {
                 if (err) Logger.error(err);

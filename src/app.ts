@@ -55,17 +55,16 @@ server.listen(APP_PORT, () => {
     const opt: EmailMessageOptions = {
         subject: `${APP_NAME} APP`,
         to: ['chiditochi@yahoo.com', 'alasoharriet06@gmail.com'],
-        text: `
-        Dear Google,
-        This email was sent from the ${APP_NAME} app.
-        Please let all know that Harriet is a darling.
-        I love her always.
-        Kisses and bear hugs
-
-        Regards
+        text: "",
+        html: `
+        Dear Lord, <br/>
+        You are God and will always be<br/>
+        Lord bless and give Harriet and I peace.<br/>
+        Hear our prayers this day.<br/>
+        Amen!
         `,
         attachment: [{
-            path: path.join(__dirname, "assets", "you-quiz-question-template.xlsx"),
+            path: path.join(__dirname, 'assets', 'you-quiz-question-template.xlsx'),
             type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
             name: `${APP_NAME}-Template.xlsx`
         }]

@@ -1,4 +1,4 @@
-# Add the required .env variable constants for the user to populate here
+# Add the required .env variable constants for the user to populate here  ###alasoharriet06@gmail.com
 
 APP_NAME=You-Quiz
 APP_PORT=3001

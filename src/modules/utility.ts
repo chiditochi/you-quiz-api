@@ -198,13 +198,25 @@ export function getMongooseObjectId(id: string): mongoose.Types.ObjectId {
     return mongoose.Types.ObjectId(id)
 }
 
+// const interface AttachmentOptions =  {
+//     path?: string,
+//     type?: string,
+//     name?: string
+//     data?: string
+
+// }
+
 export interface EmailMessageOptions {
     text: string,
     to: string[],
     subject: string,
-    attachment: [{
+    html?: string,
+    attachment: {
         path?: string,
         type?: string,
         name?: string
-    }] | []
+        data?: string,
+        alternative?: boolean
+
+    }[] | []
 }
