@@ -1,9 +1,11 @@
 import express, { Request, Response, Application, NextFunction } from 'express';
 import { Connection } from "mongoose";
-import { IUser, USERROLE } from '../../modules/utility';
+import { IUser, USERROLE, expressRequestFormFileType, formErrorType, expressRequestFormFileType2, IReqQuestionUpload } from '../../modules/utility';
 type configType = typeof import("../../config.json");
 import AppEvents from '../../modules/appEvents';
 import { EventEmitter } from 'events';
+import { Fields, File } from 'formidable';
+import { IQuestionFromExcel } from './../../modules/utility';
 
 // declare namespace Express {
 //     export interface Request {
@@ -24,13 +26,26 @@ declare global {
   namespace Express {
     export interface Request {
       currentUser?: IUser,
-      // formFiles?: expressRequestFormFileType | string[],
-      // formFields?: Fields,
-      // formError?: formErrorType,
+      formFiles?: expressRequestFormFileType | string[],
+      formFile: expressRequestFormFileType2,
+      formFields: { fields?: Fields, type?: string, testId?: string },
+      // questionUpload:  { file?: File, fileName?: string, type?: string, testId?: string, questions: IQuestionFromExcel[], totalDuration: number },
+      formError?: formErrorType,
       appError?: { err: Error, message: string }
       isLoggedIn?: boolean,
       currentUserToken: string,
-      token: string
+      token: string,
+      // allQuestions: IQuestionFromExcel[],
+      // totalDuration: number,
+      // uploadedFileName: string
+
+      questionFileName: string,
+      questionFile: File,
+      questionType: number,
+      questionTestId: string,
+      questionQuestions: IQuestionFromExcel[],
+      questionTotalDuration: number,
+      questionUserFileName: string
 
     }
 

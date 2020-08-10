@@ -1,21 +1,25 @@
 import { Schema, Types } from 'mongoose';
-import { ITest } from '../utility';
+import { ITest, addDaysToDate } from '../utility';
+import { Logger } from '../../app';
 
 const TestSchema = new Schema({
     creator: {
         type: Schema.Types.ObjectId, ref: "User"
     },
     duration: {
-        type: String, required: true
+        type: Number, default: 0
     },
     isTimed: {
         type: Boolean, default: false
     },
     questionCount: {
-        type: Number, required: true
+        type: Number, required: true, min: 5, max: 100
     },
     category: {
         type: Schema.Types.ObjectId, ref: "Category"
+    },
+    ttl: {
+        type: Number, default: addDaysToDate(new Date(), 7)
     },
     createdAt: {
         type: Date, default: Date.now
@@ -34,6 +38,7 @@ const TestSchema = new Schema({
 
 TestSchema.pre<ITest>("update", function (next) {
     this.updatedAt = new Date();
+    Logger.log(`updating Test db`)
     next();
 });
 

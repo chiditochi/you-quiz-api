@@ -5,6 +5,7 @@ import moment from 'moment';
 import mongoose, { Schema } from 'mongoose';
 import AppACL from './acl';
 import { NextFunction } from 'express';
+import { File } from 'formidable'
 
 
 
@@ -58,6 +59,8 @@ export function getLogger(appName: string) {
 
     return logger;
 }
+
+export type formErrorType = { stack: Array<string>, message: string } | Error;
 
 export enum GENDER {
     MALE = 1, FEMALE = 2
@@ -141,13 +144,39 @@ export interface ICategory extends mongoose.Document {
 export interface ITest extends mongoose.Document {
     [_id: string]: any
     creator: String,
-    duration: String,
-    isTimed?: Boolean,
+    duration?: Number,
+    isTimed: Boolean,
     questionCount: Number,
     category: String,
     createdAt?: Date,
-    updatedAt?: Date
+    updatedAt?: Date,
+    ttl?: Number
 };
+
+export const TestRequiredFields = 'creator questionCount category'.split(" ");
+
+export interface IReqQuestionUpload { file?: File, fileName?: string, type?: string, testId?: string, questions: IQuestionFromExcel[], totalDuration: number };
+
+export interface IQuestionFromExcel {
+    question: String,
+    options: [String],
+    answer: String,
+    duration?: Number
+}
+
+export class QuestionFromExcel<IQuestionFromExcel> {
+    question: string = '';
+    options: string[] = [];
+    answer: string = '';
+    duration?: number = 0;
+}
+
+export const getQuestionFromExcel = (): IQuestionFromExcel => ({
+    question: '',
+    options: [''],
+    answer: '',
+    duration: 0
+});
 
 export interface IQuestion extends mongoose.Document {
     [_id: string]: any
@@ -156,14 +185,14 @@ export interface IQuestion extends mongoose.Document {
         question: String,
         options: [String],
         answer: String,
-        duration: String
+        duration?: String
     }],
-    type: String,
+    type?: String,
     createdAt?: Date,
     updatedAt?: Date
 };
 
-export enum QuestionType { TEXT = "TEXT", IMAGE = "IMAGE" };
+export enum QuestionType { TEXT = 1, IMAGE = 2 };
 
 export function validateCreationFields(requiredList: string[], reqObj: {}): { status: boolean, error: string[] } {
     let result: { status: boolean, error: string[] } = { status: false, error: [] };
@@ -187,6 +216,7 @@ export const validateCreationDataValues =
     }
 
 export type expressRequestFormFileType = Array<{ fileName: string, file: File }>
+export type expressRequestFormFileType2 = { fileName: string, file: File }
 
 export type RequiredUserCreationFields = { firstName: string, lastName: string, gender: number, roles: number, email: string, password: string };
 
@@ -197,14 +227,6 @@ export type UserLoginFields = {
 export function getMongooseObjectId(id: string): mongoose.Types.ObjectId {
     return mongoose.Types.ObjectId(id)
 }
-
-// const interface AttachmentOptions =  {
-//     path?: string,
-//     type?: string,
-//     name?: string
-//     data?: string
-
-// }
 
 export interface EmailMessageOptions {
     text: string,
@@ -220,3 +242,6 @@ export interface EmailMessageOptions {
 
     }[] | []
 }
+
+
+export const addDaysToDate = (date: Date, days: number) => (new Date(date)).setDate((new Date(date)).getDate() + days);

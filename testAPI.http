@@ -61,27 +61,28 @@ GET http://localhost:3001/api/test/5f28632a1991f14bb8b66fbc
 ###
 ### Category Collection
 GET http://localhost:3001/api/category/all
-### a test
-GET http://localhost:3001/api/category/5f28632a1991f14bb8b66fbd
-### a test
+### 
+GET http://localhost:3001/api/category/5f2a83b557ee7712eca49493
+### 
 DELETE  http://localhost:3001/api/category/5f294e22a087fd48ec6cea23
 
-### a test
+### 
 POST http://localhost:3001/api/category
 Content-Type: application/json
 
 {
-    "roleName": "T",
-    "creatorId" : "5f28632a1991f14bb8b66fbc"
+    "roleName": "History",
+    "creatorId" : "5f2a83b557ee7712eca49492"
 }
 ###
-PUT http://localhost:3001/api/category/5f294e22a087fd48ec6cea23
+PUT http://localhost:3001/api/category/5f2a83b557ee7712eca49493
 Content-Type: application/json
 
 {
-    "roleName": "Arts"
+    "roleName": "Jokes"
 }
 ###
+{"message":"all categories","data":[{"_id":"5f2a83b557ee7712eca49493","roleName":"jokes","creator":"5f2a83b557ee7712eca49492","createdAt":"2020-08-09T00:19:07.761Z","updatedAt":"2020-08-09T00:19:07.761Z","__v":0},{"_id":"5f3053e2f077e95130178e67","roleName":"history","creator":"5f2a83b557ee7712eca49492","createdAt":"2020-08-09T19:52:02.646Z","updatedAt":"2020-08-09T19:52:02.646Z","__v":0}]}
 ### login and signup section
 POST http://localhost:3001/api/login
 Content-Type: application/json
@@ -102,3 +103,37 @@ Content-Type: application/json
 GET http://localhost:3001/api/403
 
 {"status":true,"data":{"profile":{"email":"agnesyapi@gmail.com","userName":"y.agnes"},"gender":"FEMALE","roles":["5f2a83b557ee7712eca49495"],"isActive":true,"_id":"5f2a852d697b8c36386ac5e0","firstName":"agnes","lastName":"yapi","createdAt":"2020-08-05T10:08:45.418Z","updatedAt":"2020-08-05T10:08:45.418Z","__v":0,"token":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7InByb2ZpbGUiOnsiZW1haWwiOiJhZ25lc3lhcGlAZ21haWwuY29tIiwidXNlck5hbWUiOiJ5LmFnbmVzIn0sImdlbmRlciI6IkZFTUFMRSIsInJvbGVzIjpbIjVmMmE4M2I1NTdlZTc3MTJlY2E0OTQ5NSJdLCJpc0FjdGl2ZSI6dHJ1ZSwiX2lkIjoiNWYyYTg1MmQ2OTdiOGMzNjM4NmFjNWUwIiwiZmlyc3ROYW1lIjoiYWduZXMiLCJsYXN0TmFtZSI6InlhcGkiLCJjcmVhdGVkQXQiOiIyMDIwLTA4LTA1VDEwOjA4OjQ1LjQxOFoiLCJ1cGRhdGVkQXQiOiIyMDIwLTA4LTA1VDEwOjA4OjQ1LjQxOFoiLCJfX3YiOjB9LCJpYXQiOjE1OTY2MjI3NzYsImV4cCI6MTU5NzUyMjc3Nn0.j-EgJNTL1ra8Pw4YP6Qe_w0SqAcf93Meq3A62qrm6Fg"},"message":"Login successful | Token generated!"}
+
+
+### TEST
+GET http://localhost:3001/api/test/all
+###
+GET http://localhost:3001/api/test/5f2f450d7c927432b0acbc98
+###
+GET http://localhost:3001/api/test/creator/5f2a83b557ee7712eca49492
+###
+DELETE  http://localhost:3001/api/test/5f2f423aea22802f388792c0
+###
+POST http://localhost:3001/api/test/
+Content-Type: application/json
+
+{
+    "creator": "5f2a83b557ee7712eca49492", "questionCount": 10, "category": "5f2a83b557ee7712eca49493"
+}
+###
+PUT http://localhost:3001/api/test/5f2f450d7c927432b0acbc98
+Content-Type: application/json
+
+{
+    "duration": 0, "questionCount": null, "isTimed": true
+}
+### Question
+{"message":"all tests","data":[{"duration":0,"isTimed":false,"ttl":1597538172320,"_id":"5f2f450d7c927432b0acbc98","creator":"5f2a83b557ee7712eca49492","questionCount":10,"category":"5f2a83b557ee7712eca49493","createdAt":"2020-08-09T00:36:29.479Z","updatedAt":"2020-08-09T00:36:29.479Z","__v":0},{"duration":0,"isTimed":true,"ttl":1597556778837,"_id":"5f303b6ef077e95130178e66","creator":"5f2a83b557ee7712eca49492","questionCount":5,"category":"5f2a83b557ee7712eca49493","createdAt":"2020-08-09T18:07:42.166Z","updatedAt":"2020-08-09T18:07:42.166Z","__v":0}]}
+### Question
+GET http://localhost:3001/api/question/all
+###
+GET http://localhost:3001/api/question/5f311a95932f6e631cde6f0a
+###
+GET http://localhost:3001/api/question/byTestId/5f303b6ef077e95130178e66
+###
+DELETE  http://localhost:3001/api/question/5f31161c1153f23980b3cda8

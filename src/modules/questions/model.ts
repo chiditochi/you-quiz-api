@@ -6,7 +6,7 @@ const questionOptions = getEnumList(QuestionType);
 
 const QuestionSchema = new Schema({
     test: {
-        type: Schema.Types.ObjectId, ref: "Test"
+        type: Schema.Types.ObjectId, ref: "Test", unique: true
     },
     questions: [{
         question: { type: String, required: true },
@@ -15,7 +15,7 @@ const QuestionSchema = new Schema({
         duration: { type: String }
     }],
     type: {
-        type: String, enum: questionOptions, default: QuestionType.TEXT
+        type: String, enum: questionOptions, default: QuestionType[QuestionType.TEXT]
     },
     createdAt: {
         type: Date, default: Date.now
@@ -40,5 +40,6 @@ QuestionSchema.methods.toJSON = function () {
     return obj;
 }
 
+QuestionSchema.index({ test: 1 }, { unique: true })
 
 export default QuestionSchema;

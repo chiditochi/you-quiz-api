@@ -14,7 +14,7 @@ export default function Test(app: Application, router: Router) {
 
     router.get('/test/all', Controller.getTests)
     router.get('/test/:id', Controller.getTest)
-    router.get('/test/:creator', Controller.getTestByCreatorID)
+    router.get('/test/creator/:id', Controller.getTestByCreatorID)
     router.post('/test', Controller.addTest)
     router.put('/test/:id', Controller.updateTest)
     router.delete('/test/:id', Controller.removeTest)

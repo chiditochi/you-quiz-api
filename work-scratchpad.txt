@@ -1,0 +1,18 @@
+            const validateKeys = validateCreationDataKeys(Object.keys(user), requiredFields)
+            const validateValues = validateCreationDataValues(user, requiredFields);
+
+            if (validateKeys.length > 0 || validateValues.length > 0) throw new Error(`missing properties: ${validateKeys.length === 0 ? 0 : validateKeys.join(',')} ; invalid values: ${validateValues.length === 0 ? 0 : validateValues.join(',')}`);
+
+            const { firstName, lastName, password, roles, email, gender } = user;
+----------------------------------------------------------------
+
+
+Model.populate('modelName')
+Model.populate({
+    path: string,
+    select: { field: 0|1},
+    match: string | Model,
+    populate: { path: string select: { field: 0|1}, match: , populate: { }}
+})
+
+query.populate('refName').execPopulate();

@@ -12,14 +12,14 @@ const {
 import express from 'express';
 import http from 'http';
 import path from 'path';
-import { getLogger, EmailMessageOptions } from './modules/utility';
+import { getLogger, EmailMessageOptions, addDaysToDate } from './modules/utility';
 import morgan from 'morgan';
 import { AppRoutes } from './modules/routes';
 import DB from './modules/db';
 import AppEvents from './modules/appEvents';
 import { Connection } from 'mongoose';
 import AppACL from './modules/acl';
-
+//import './assets/data/you-quiz-question-template.xlsx'
 
 // create app
 let app = express();
@@ -31,13 +31,18 @@ app.appLogger = Logger;
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(morgan('short'))
+//Logger.log(__dirname)
 app.use(express.static(path.join(__dirname, "assets")));
 //Logger.warn(path.join(__dirname, "assets"))
+
+
 // create http server
 let server = http.createServer(app);
 // connect to db
 DB(app)
 //.then(db => Logger.log('connnected to db')).catch(e => Logger.error('Error connecting to db'))
+
+//Logger.log(addDaysToDate( new Date(), 7).toString())
 
 
 AppEvents(app);

@@ -14,6 +14,13 @@ export default function Question(app: Application, router: Router) {
     // router.get('/users/all', app.appACL.ensureAdmin, Controller.getUsers)
 
     router.get('/question/all', Controller.getQuestions)
+    router.get('/question/:id', Controller.getQuestion)
+    router.get('/question/byTestId/:testId', Controller.getQuestionsByTestId)
+    router.post('/question',
+        Controller.uploadMiddleware,
+        Controller.readQuestionsFromExcel,
+        Controller.addQuestions)
+    router.delete('/question/:id', Controller.deleteQuestion)
 
 
     return router;
