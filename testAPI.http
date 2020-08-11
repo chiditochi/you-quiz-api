@@ -31,7 +31,7 @@ Content-Type: application/json
     "firstName": "agnes" ,"lastName": "yapi" ,"roles": 2 ,"email": "agnesyapi@gmail.com" ,"password": "agnes.yapi", "gender": 2
 }
 ### update user role
-PUT http://localhost:3001/api/users/updateRole/5f29e476aec06135e012fe4c
+PUT http://localhost:3001/api/user/updateRole/5f29e476aec06135e012fe4c
 Content-Type: application/json
 
 {
@@ -47,7 +47,7 @@ PUT http://localhost:3001/api/users/changeState/5f29ef5e5580994844493cfc
 
 
 ### user change password
-PUT http://localhost:3001/api/users/changePassword/5f29d81feda8e451c805d858
+PUT http://localhost:3001/api/user/changePassword/5f29d81feda8e451c805d858
 Content-Type: application/json
 
 {

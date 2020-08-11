@@ -175,7 +175,7 @@ const AppEvents = function (app: Application) {
 
             const query = { 'profile.email': email };
             const dbUser: IUser = await DB.models.User
-                .findOne(query)
+                .findOne(query).populate('roles', { roleName: 1, creator: 1 })
                 .catch(() => { throw new Error(`Error fetching User with email: ${email}`) });
             //if user isActive is false dont allow login
             if (!dbUser.isActive) throw new Error(`Login Failed! You are not Active! Please contact the admin|manager via ${APP_EMAIL}`);
@@ -248,6 +248,7 @@ const AppEvents = function (app: Application) {
             req.currentUser = result as IUser;
             req.isLoggedIn = Object.keys(result).length ? true : false;
             Logger.info('Current User: ', req.currentUser, req.isLoggedIn)
+            Logger.log(req.currentUser.data.roles)
             next();
 
         } catch (e) {

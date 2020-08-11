@@ -29,15 +29,11 @@ declare global {
       formFiles?: expressRequestFormFileType | string[],
       formFile: expressRequestFormFileType2,
       formFields: { fields?: Fields, type?: string, testId?: string },
-      // questionUpload:  { file?: File, fileName?: string, type?: string, testId?: string, questions: IQuestionFromExcel[], totalDuration: number },
       formError?: formErrorType,
       appError?: { err: Error, message: string }
       isLoggedIn?: boolean,
       currentUserToken: string,
       token: string,
-      // allQuestions: IQuestionFromExcel[],
-      // totalDuration: number,
-      // uploadedFileName: string
 
       questionFileName: string,
       questionFile: File,
@@ -64,7 +60,9 @@ declare global {
         ensureManager(req: Request, res: Response, next: NextFunction): void,
         ensureTeacher(req: Request, res: Response, next: NextFunction): void,
         ensureStudent(req: Request, res: Response, next: NextFunction): void,
-        ensureRolesExist(a: [USERROLE]): void
+        ensureOwnerOrAdmin(req: Request, res: Response, next: NextFunction): void,
+        ensureOwner(req: Request, res: Response, next: NextFunction): void,
+        isInRole(req: Request, targetRole: USERROLE | USERROLE[]): boolean
       }
 
     }

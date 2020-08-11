@@ -4,8 +4,18 @@ import path from 'path'
 import moment from 'moment';
 import mongoose, { Schema } from 'mongoose';
 import AppACL from './acl';
-import { NextFunction } from 'express';
+import { NextFunction, Request } from 'express';
 import { File } from 'formidable'
+
+
+
+
+//Authorization
+export const ensurePolicy = <U, T>(U: Request, appModel: mongoose.Document, prop: string): boolean => {
+    const user = (U.currentUser as mongoose.Document).get(prop);
+    const target = appModel.get(prop);
+    return user === target ? true : false;
+}
 
 
 

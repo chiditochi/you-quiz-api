@@ -16,3 +16,5 @@ Model.populate({
 })
 
 query.populate('refName').execPopulate();
+query.populated('refName') : boolean 
+query.depopulate('refName')
