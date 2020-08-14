@@ -11,7 +11,7 @@ export default function UserController(app: Application) {
 
     const getTests = async function (req: Request, res: Response) {
         try {
-            const tests = await DB.models.Test.find({}).populate('creator', { profile: 1 }).populate('category', { roleName: 1 });
+            const tests = await DB.models.Test.find({}, { answers: 0 }).populate('creator', { profile: 1 }).populate('category', { roleName: 1 });
             return res.json({ message: "all tests", data: tests });
         } catch (e) {
             Logger.error(`Error fetching tests, ${e.message || e}`)
@@ -22,7 +22,9 @@ export default function UserController(app: Application) {
     const getTestByCreatorID = async function (req: Request, res: Response) {
         try {
             const { id } = req.params;
-            const testsByCreator = await DB.models.Test.find({ creator: id }).populate('creator', { profile: 1 }).populate('category', { roleName: 1 });
+
+            const options = (req.isAdmin || req.isOwner) ? {} : { answers: 0 };
+            const testsByCreator = await DB.models.Test.find({ creator: id }, options).populate('creator', { profile: 1 }).populate('category', { roleName: 1 });
             return res.json({ message: "tests by creator", data: testsByCreator });
         } catch (e) {
             Logger.error(`Error fetching test for creator, ${e.message || e}`)
@@ -34,7 +36,8 @@ export default function UserController(app: Application) {
         try {
             const { id } = req.params;
             if (!id) throw new Error(`Please provide user id`);
-            const test = await DB.models.Test.find({ _id: id }).populate('creator', { profile: 1 }).populate('category', { roleName: 1 });
+            const options = (req.isAdmin || req.isOwner) ? {} : { answers: 0 };
+            const test = await DB.models.Test.find({ _id: id }, options).populate('creator', { profile: 1 }).populate('category', { roleName: 1 });
             return res.json({ message: test.length > 0 ? "test fetched" : "test not found", data: test });
         } catch (e) {
             Logger.error(`Error fetching users, ${e.message || e}`)

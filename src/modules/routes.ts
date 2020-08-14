@@ -5,6 +5,7 @@ import User from "./users/route";
 import Test from "./tests/route";
 import Question from "./questions/route";
 import Category from "./categories/route";
+import TestResult from "./testResults/route";
 import { UserLoginFields, RequiredUserCreationFields, validateCreationDataKeys, validateCreationDataValues } from "./utility";
 
 
@@ -54,6 +55,7 @@ export function AppRoutes(app: Application) {
     User(app, router);
     Test(app, router);
     Question(app, router);
+    TestResult(app, router);
 
     router.get('*', (req: Request, res: Response, next: NextFunction) => {
         const path = req.path;

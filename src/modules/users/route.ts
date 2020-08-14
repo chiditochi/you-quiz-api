@@ -23,7 +23,7 @@ export default function User(app: Application, router: Router) {
     router.get('/user/:id', Controller.getUser)
     router.post('/user', Controller.addUser)
     router.put('/user/:id',
-        AppACL.ensureOwner,
+        AppACL.ensureUserOwner,
         Controller.updateUser)
     router.put('/user/updateRole/:id',
         ensureInRoles([USERROLE.ADMIN, USERROLE.MANAGER]),
@@ -34,7 +34,7 @@ export default function User(app: Application, router: Router) {
         Controller.updateUserState)
     //only the user can do this
     router.put('/user/changePassword/:id',
-        AppACL.ensureOwner,
+        AppACL.ensureUserOwner,
         Controller.changePassword)
     //only admin
     router.delete('/user/:id',

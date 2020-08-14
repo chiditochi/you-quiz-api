@@ -1,33 +1,32 @@
 import { Application, Router, Request, Response, NextFunction } from "express";
-import UserController from "./controller";
+import TestResultsController from "./controller";
 import { USERROLE, getEnumValue } from "../utility";
 
 export default function Test(app: Application, router: Router) {
     const Logger = app.appLogger;
-    const Controller = UserController(app);
+    const Controller = TestResultsController(app);
     const AppACL = app.appACL;
 
-    router.all('/test/*', function (req, res, next) {
-        Logger.info('inside test routes')
+    router.all('/testResult/*', function (req, res, next) {
+        Logger.info('inside testResult routes')
         next()
     })
 
-    router.get('/test/all', Controller.getTests)
-    router.get('/test/:id',
-        AppACL.ensureTestCreatorOrAdmin,
-        Controller.getTest)
-    router.get('/test/creator/:id',
-        AppACL.ensureTestCreatorOrAdmin,
-        Controller.getTestByCreatorID)
-    router.post('/test',
+    router.get('/testResult/all',
         ensureInRoles([USERROLE.ADMIN, USERROLE.MANAGER, USERROLE.TEACHER]),
-        Controller.addTest)
-    router.put('/test/:id',
-        AppACL.ensureOwnerOrAdmin,
-        Controller.updateTest)
-    router.delete('/test/:id',
-        AppACL.ensureOwnerOrAdmin,
-        Controller.removeTest)
+        Controller.getTestResults)
+    router.get('/testResult/:id',
+        AppACL.ensureResultOwnerOrTestCreatorOrAdmin,
+        Controller.getTestResult)
+    router.get('/testResult/test/:id',
+        AppACL.ensureTestCreatorOrAdmin,
+        Controller.getTestResultByTestID)
+    router.post('/testResult',
+        ensureInRoles([USERROLE.STUDENT, USERROLE.USER]),
+        Controller.addTestResult)
+    router.delete('/testResult/:id',
+        AppACL.ensureTestCreatorOrAdmin,
+        Controller.removeTestResult)
 
     function ensureInRoles(roles: USERROLE[]) {
         return function (req: Request, res: Response, next: NextFunction) {
@@ -50,8 +49,6 @@ export default function Test(app: Application, router: Router) {
             }
         }
     }
-
-
 
     return router;
 

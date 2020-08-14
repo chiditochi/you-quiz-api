@@ -15,6 +15,9 @@ const TestSchema = new Schema({
     questionCount: {
         type: Number, required: true, min: 5, max: 100
     },
+    answers: {
+        type: [String]
+    },
     category: {
         type: Schema.Types.ObjectId, ref: "Category"
     },

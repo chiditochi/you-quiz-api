@@ -12,9 +12,57 @@ Model.populate({
     path: string,
     select: { field: 0|1},
     match: string | Model,
-    populate: { path: string select: { field: 0|1}, match: , populate: { }}
+    populate: { path: string, select: { field: 0|1}, match: , populate: { }}
 })
 
 query.populate('refName').execPopulate();
 query.populated('refName') : boolean 
 query.depopulate('refName')
+
+
+const [test, question] = await Promise.all(
+    [DB.models.Test.findById(currentUserId),
+    DB.models.Question.findById(currentUserId).populate('test', { creator: 1 })]
+);
+
+function generateAnswer(size : number =1, max : number=4): string[]{
+    let a : string[]= [];
+    let options = 'A B C D'.split(' ')
+    for(var i = 0; i < size; i++){
+        let c = Math.floor(Math.random() * max);
+        a.push(options[c])
+    }
+    return a;
+}
+
+function getPrescriptionTime(span=10){   
+   const label = 'prescriptionTime';
+   const lastPrescription = window.localStorage.getItem('prescriptionTime');
+   let h = 0; 
+   let period = '';
+   if(lastPrescription)
+        [ h, period ] = lastPrescription.split(' ');
+   const currentH = new Date().getHours()
+   if(!lastPrescription){
+       const pe = currentH >= 12 && currentH < 24 ? currentH + ' pm': currentH + ' am';
+       window.localStorage.setItem('prescriptionTime', pe);
+       return;
+   }
+   h = parseInt(h);
+   
+   const process = (
+   (currentH < 12 && currentH > h && period.toLowerCase()==='am') || 
+   (currentH < 24 && currentH > h && period.toLowerCase()==='pm'))? true: false;
+   if(process){
+   h += period.toLowerCase() === 'pm' && h < 12 ? 12 : 0;
+   h += span;
+   const newtime = (h >= 24) ? (h - 24) + " am" : 
+           ((h > 12) ? h + ' pm' : h + ' am');
+   console.log(newtime)
+    window.localStorage.setItem('prescriptionTime', newtime);
+    }else{
+        console.log(window.localStorage.getItem('prescriptionTime'));
+    }
+ }
+
+getPrescriptionTime()

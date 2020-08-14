@@ -11,11 +11,11 @@ import { File } from 'formidable'
 
 
 //Authorization
-export const ensurePolicy = <U, T>(U: Request, appModel: mongoose.Document, prop: string): boolean => {
-    const user = (U.currentUser as mongoose.Document).get(prop);
-    const target = appModel.get(prop);
-    return user === target ? true : false;
-}
+// export const ensurePolicy = <U, T>(U: Request, appModel: mongoose.Document, prop: string): boolean => {
+//     const user = (U.currentUser as mongoose.Document).get(prop);
+//     const target = appModel.get(prop);
+//     return user === target ? true : false;
+// }
 
 
 
@@ -125,7 +125,7 @@ export interface IUser extends mongoose.Document {
     firstName: String,
     lastName: String,
     gender: String,
-    roles: String[],
+    roles: String[] | { roleName: String, _id: String }[],
     createdAt?: Date,
     isActive?: Boolean,
     profile: {
@@ -157,6 +157,7 @@ export interface ITest extends mongoose.Document {
     duration?: Number,
     isTimed: Boolean,
     questionCount: Number,
+    answers?: String[],
     category: String,
     createdAt?: Date,
     updatedAt?: Date,
@@ -164,6 +165,19 @@ export interface ITest extends mongoose.Document {
 };
 
 export const TestRequiredFields = 'creator questionCount category'.split(" ");
+
+
+export interface ITestResult extends mongoose.Document {
+    [_id: string]: any
+    test: String,
+    user: String,
+    answers: [String],
+    questionCount: Number,
+    score: String,
+    createdAt?: Date,
+};
+
+export const TestResultRequiredFields = 'test user answers questionCount'.split(" ");
 
 export interface IReqQuestionUpload { file?: File, fileName?: string, type?: string, testId?: string, questions: IQuestionFromExcel[], totalDuration: number };
 
@@ -255,3 +269,4 @@ export interface EmailMessageOptions {
 
 
 export const addDaysToDate = (date: Date, days: number) => (new Date(date)).setDate((new Date(date)).getDate() + days);
+

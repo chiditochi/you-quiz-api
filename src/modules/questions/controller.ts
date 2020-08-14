@@ -170,6 +170,10 @@ export default function Question(app: Application) {
             dbQuestion.test = dbTest._id;
             dbQuestion.questions = req.questionQuestions as IQuestion["questions"];
             dbQuestion.type = getEnumValue(QuestionType, type);
+
+            dbTest.answers = req.questionQuestions.map(v=>v.answer);
+            dbTest.updatedAt = new Date();
+            const updateddbTest = await dbTest.save();
             const updatedNewQuestion = await dbQuestion.save();
             await removeFile(file?.path as string);
             return res.json({ message: `${req.questionQuestions.length} questions added to test with id ${testId}`, data: updatedNewQuestion });

@@ -43,6 +43,8 @@ declare global {
       questionTotalDuration: number,
       questionUserFileName: string
 
+      isAdmin: boolean,
+      isOwner: boolean
     }
 
     export interface Response {
@@ -61,7 +63,10 @@ declare global {
         ensureTeacher(req: Request, res: Response, next: NextFunction): void,
         ensureStudent(req: Request, res: Response, next: NextFunction): void,
         ensureOwnerOrAdmin(req: Request, res: Response, next: NextFunction): void,
-        ensureOwner(req: Request, res: Response, next: NextFunction): void,
+        ensureUserOwner(req: Request, res: Response, next: NextFunction): void,
+        ensureTestCreatorOrAdmin(req: Request, res: Response, next: NextFunction): void,
+        ensureResultOwnerOrTestCreatorOrAdmin(req: Request, res: Response, next: NextFunction): void,
+        ensureAuthenticated(req: Request, res: Response, next: NextFunction): void,
         isInRole(req: Request, targetRole: USERROLE | USERROLE[]): boolean
       }
 

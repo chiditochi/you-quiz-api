@@ -113,7 +113,8 @@ export default function UserController(app: Application) {
                     break;
                 case getEnumValue(UPDATETYPE, UPDATETYPE.DELETE):
                     if (userObj.roles.indexOf(roleObj._id) >= 0) {
-                        let currentRoles = userObj.roles.filter(v => v.toString() !== roleObj._id.toString());
+                        const roles =userObj.roles as string[];
+                            let currentRoles = roles.filter(v => v.toString() !== roleObj._id.toString());
                         Logger.log(currentRoles, roleId);
                         userObj.roles = currentRoles;
                     }
