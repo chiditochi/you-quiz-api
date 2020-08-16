@@ -153,12 +153,12 @@ export interface ICategory extends mongoose.Document {
 
 export interface ITest extends mongoose.Document {
     [_id: string]: any
-    creator: String,
+    creator: String | { _id: String, profile: { email: String }, firstName: String, lastName: String },
     duration?: Number,
     isTimed: Boolean,
     questionCount: Number,
     answers?: String[],
-    category: String,
+    category: String | { _id: String, roleName: String },
     createdAt?: Date,
     updatedAt?: Date,
     ttl?: Number
@@ -270,3 +270,61 @@ export interface EmailMessageOptions {
 
 export const addDaysToDate = (date: Date, days: number) => (new Date(date)).setDate((new Date(date)).getDate() + days);
 
+
+export type IRegisterEmailTemplate = {
+    recipient: { fullName: string },
+    user: { fullName: string, email: string, roleName: string }
+}
+
+export const getRegisterEmailTemplate = (data: IRegisterEmailTemplate): string => {
+    return `
+    Dear Admin|Manager,<br/>
+    ${data.user.fullName} with email ${data.user.email} has registered as a ${data.user.roleName}<br/>
+    Regards  
+    `;
+}
+
+export type ITestQuestionEmailTemplate = {
+    recipient: { fullName: string },
+    test: { isTimed: boolean, duration: number, categoryName: string, questionCount: number }
+}
+
+export const getTestQuestionEmailTemplate = (data: ITestQuestionEmailTemplate): string => {
+    const durationInMin = data.test.isTimed ? data.test.duration + ' second(s) ' : '';
+    return `
+    Dear ${data.recipient.fullName},<br/>
+    You just created a ${durationInMin}test in category ${data.test.categoryName} with ${data.test.questionCount} questions.<br/>
+    Regards  
+    `;
+}
+
+//Test Result email template for Student|User
+export type IStudentUserEmailTemplate = {
+    recipient: { fullName: string },
+    testResult: { score: string, categoryName: string }
+}
+
+export const getStudentUserEmailTemplate = (data: IStudentUserEmailTemplate): string => {
+    return `
+    Dear ${data.recipient.fullName},<br/>
+    Thanks for taking the ${data.testResult.categoryName} test.<br/>
+    You scored ${data.testResult.score}.<br/>
+    Regards  
+    `;
+}
+
+//Test Result email template for Teacher
+export type ITestResultEmailTemplate = {
+    recipient: { fullName: string },
+    testResult: { fullName: string, categoryName: string }
+}
+
+export const getTestResultEmailTemplate = (data: ITestResultEmailTemplate): string => {
+    return `
+    Dear ${data.recipient.fullName},<br/>
+    ${data.testResult.fullName} has taken the ${data.testResult.categoryName} test.<br/>
+    Regards
+    `;
+}
+
+export const getUserFullName = (user: IUser): string => `${user.firstName}, ${user.lastName}`;

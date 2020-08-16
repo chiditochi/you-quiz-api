@@ -3,9 +3,10 @@ import config from '../config.json';
 import mongoose, { Connection, Document, Mongoose } from 'mongoose'
 
 import { EventEmitter } from 'events';
-import { IUser, USERROLE, RequiredUserCreationFields, validateCreationFields, UserLoginFields, getEnumValue, IUserRole, validateCreationDataKeys, validateCreationDataValues, GENDER, EmailMessageOptions, getEnumList, ICategory } from './utility'
+import { IUser, USERROLE, RequiredUserCreationFields, validateCreationFields, UserLoginFields, getEnumValue, IUserRole, validateCreationDataKeys, validateCreationDataValues, GENDER, EmailMessageOptions, getEnumList, ICategory, getRegisterEmailTemplate, IRegisterEmailTemplate, getUserFullName } from './utility'
 import * as jwt from 'jsonwebtoken';
 import { SMTPClient } from 'emailjs';
+import UserRoles from './userRoles/route';
 
 
 const { APP_SECRET, APP_ADMIN_PASSWORD, APP_EMAIL, APP_EMAIL_SMTP, APP_EMIAL_PORT, APP_EMAIL_PASSWORD, APP_NAME } = process.env
@@ -152,6 +153,26 @@ const AppEvents = function (app: Application) {
             let dbUserDoc: IUser = await userDoc.save().catch((e: any) => { throw e });
             const msg = `User ${dbUserDoc.profile.userName} created! Login with email and password!`;
             const response = { success: true, data: userDoc, message: msg };
+
+            //send email notification to Admin and managers
+            //send notification email to admin and managers
+            const eUserFullName = getUserFullName(dbUserDoc);
+            const eRoleName = getEnumValue(USERROLE, roles);
+            const opt: EmailMessageOptions = {
+                subject: `Registration`,
+                to: [''],
+                text: "",
+                html: getRegisterEmailTemplate({
+                    user: {
+                        fullName: eUserFullName,
+                        email: dbUserDoc.profile.email,
+                        roleName: eRoleName
+                    }
+                } as IRegisterEmailTemplate),
+                attachment: []
+            };
+            appEvents.emit("sendRegisterEmail", opt)
+
             Logger.info(msg);
             res.json(response);
 
@@ -262,10 +283,11 @@ const AppEvents = function (app: Application) {
 
     function getHtmlData(content: string): string {
         return `
-        <div style='background:aliceblue; line-height: 1.5; text-align: justify; font-size: .9em;'>
+        <div style='background:rgb(248, 250, 252); line-height: 2.0; text-align: justify; font-size: 1.1em; padding: 0 10px; color: rgb(1, 137, 255)'>
             ${content}
-            <br/><br/>
-        From ${APP_NAME} Admin  | <small style='color:red'>${new Date().toDateString()}</small>
+            <p style='color:red'>
+            From <span style="font-weight: bold; color: rgb(21, 146, 255)">${APP_NAME} Admin</span> | <small >${new Date().toDateString()}</small>
+            </p>
         </div>
         `;
     }
@@ -294,7 +316,7 @@ const AppEvents = function (app: Application) {
             })
 
             Logger.log('email to be sent: ', message)
-            return;
+            //return;
             client.send(message, function (err, message) {
                 if (err) Logger.error(err);
                 else Logger.info(`Email to ${message.header.to} was sent`)
@@ -303,6 +325,30 @@ const AppEvents = function (app: Application) {
             Logger.error(`Error sending email, ${error.message | error}`)
         }
     })
+
+    //get emails for admin and manager, set as opt.to = [emails]
+    appEvents.on("sendRegisterEmail", async function (opt: EmailMessageOptions) {
+        try {
+            //get emails
+            const queryOption = {
+                roleName: {
+                    $in: [
+                        getEnumValue(USERROLE, USERROLE.ADMIN),
+                        getEnumValue(USERROLE, USERROLE.MANAGER)
+                    ]
+                }
+            }
+            const roleIds = await DB.models.UserRole.find(queryOption, { _id: 1 });
+            const adminAndManagerIds: string[] = roleIds.map(v => v._id);
+            const queryUserByRole = { roles: { $in: adminAndManagerIds } };
+            const adminAndManagers = await DB.models.User.find(queryUserByRole, { profile: 1 })
+            const adminAndManagerEmails: string[] = adminAndManagers.map(v => v.profile.email);
+            opt.to = adminAndManagerEmails;
+            appEvents.emit('sendEmail', opt);
+        } catch (e) {
+            Logger.error(e.message | e)
+        }
+    });
 
     app.appEvents = appEvents
 };

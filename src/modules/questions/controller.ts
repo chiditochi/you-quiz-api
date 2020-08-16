@@ -4,11 +4,12 @@ import path from 'path';
 import moment from "moment";
 import fs from 'fs';
 import Excel, { Row } from 'exceljs-lightweight';
-import { IQuestion, ITest, getEnumValue, QuestionType, getEnumList, IQuestionFromExcel, getQuestionFromExcel } from './../utility';
+import { IQuestion, ITest, getEnumValue, QuestionType, getEnumList, EmailMessageOptions, ITestQuestionEmailTemplate, getTestQuestionEmailTemplate, IUser, IQuestionFromExcel, getQuestionFromExcel, getUserFullName } from './../utility';
 
 export default function Question(app: Application) {
     const Logger = app.appLogger;
     const DB = app.appDB;
+    const AppEvents = app.appEvents;
 
     const getQuestions = async function (req: Request, res: Response) {
         try {
@@ -157,7 +158,7 @@ export default function Question(app: Application) {
         const testId = req.questionTestId;
         const file = req.questionFile;
         try {
-            const dbTest: ITest = await DB.models.Test.findById(testId);
+            const dbTest: ITest = await DB.models.Test.findById(testId).populate('category', { roleName: 1 });
             if (dbTest == null) throw new Error(`Test with id ${testId} does not exist`);
             const dbTestQuestion: IQuestion = await DB.models.Question.findOne({ test: testId });
             if (dbTestQuestion !== null) throw new Error(`A Question with test id ${dbTest._id} exists: Question ID: ${dbTestQuestion._id}`);
@@ -171,11 +172,35 @@ export default function Question(app: Application) {
             dbQuestion.questions = req.questionQuestions as IQuestion["questions"];
             dbQuestion.type = getEnumValue(QuestionType, type);
 
-            dbTest.answers = req.questionQuestions.map(v=>v.answer);
+            dbTest.answers = req.questionQuestions.map(v => v.answer);
             dbTest.updatedAt = new Date();
             const updateddbTest = await dbTest.save();
             const updatedNewQuestion = await dbQuestion.save();
             await removeFile(file?.path as string);
+
+            //send the TestCreator an email
+            const eTestCreatorUser = req.currentUser?.data;
+            const eTestCreatorFullName = getUserFullName(eTestCreatorUser);
+            const eTestCreatorsEmail = eTestCreatorUser.profile.email;
+            const eDbTestCategory = dbTest.category as { _id: String, roleName: String };
+            const opt: EmailMessageOptions = {
+                subject: `Test Question Uploaded`,
+                to: [eTestCreatorsEmail],
+                text: "",
+                html: getTestQuestionEmailTemplate({
+                    recipient: {
+                        fullName: eTestCreatorFullName
+                    },
+                    test: {
+                        isTimed: dbTest.isTimed,
+                        categoryName: eDbTestCategory.roleName,
+                        questionCount: dbTest.questionCount,
+                    }
+                } as ITestQuestionEmailTemplate),
+                attachment: []
+            };
+            AppEvents.emit("sendEmail", opt) //end of email sending
+
             return res.json({ message: `${req.questionQuestions.length} questions added to test with id ${testId}`, data: updatedNewQuestion });
         } catch (e) {
             await removeFile(file.path as string);

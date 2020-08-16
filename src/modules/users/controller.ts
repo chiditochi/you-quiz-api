@@ -1,11 +1,12 @@
 import { Application, Request, Response } from "express";
-import { IUser, ITest, getRequiredUserCreationFields, validateCreationDataKeys, getEnumValue, GENDER, USERROLE, IUserRole, UPDATETYPE } from './../utility';
+import { IUser, ITest, getRequiredUserCreationFields, validateCreationDataKeys, getEnumValue, GENDER, USERROLE, IUserRole, UPDATETYPE, EmailMessageOptions, getRegisterEmailTemplate, IRegisterEmailTemplate, getUserFullName } from './../utility';
 import UserSchema from './model';
 
 
 export default function UserController(app: Application) {
     const Logger = app.appLogger;
     const DB = app.appDB;
+    const AppEvents = app.appEvents;
 
     const getUsers = async function (req: Request, res: Response) {
         try {
@@ -59,10 +60,30 @@ export default function UserController(app: Application) {
             if (hash.length === 0 || hash == null) throw new Error(`Error generating password hash for ${password}:(${password.length}) min length is ${UserSchema.obj.password.min} `);
             newUser.password = hash;
             Logger.log(`hash : ${hash}`);
-            const newDBUser = await newUser.save().catch((e: { message: any, code: number }) => {
+            const newDBUser: IUser = await newUser.save().catch((e: { message: any, code: number }) => {
                 Logger.error(`Error!, ${e.code === 11000 ? `user with email ${email} exists` : e.message}`)
                 throw new Error(`Error!, ${e.code === 11000 ? `user with email ${email} exists` : e.message}`)
             });
+
+            //send notification email to admin and managers
+            const eUserFullName = getUserFullName(newDBUser);
+            const eRoleName = getEnumValue(USERROLE, roles);
+            const opt: EmailMessageOptions = {
+                subject: `Registration`,
+                to: [''],
+                text: "",
+                html: getRegisterEmailTemplate({
+                    user: {
+                        fullName: eUserFullName,
+                        email: newDBUser.profile.email,
+                        roleName: eRoleName
+                    }
+                } as IRegisterEmailTemplate),
+                attachment: []
+            };
+            AppEvents.emit("sendRegisterEmail", opt)
+
+
             return res.json({ message: "category added!", data: newDBUser });
         } catch (e) {
             Logger.error(e.message || e);
@@ -113,8 +134,8 @@ export default function UserController(app: Application) {
                     break;
                 case getEnumValue(UPDATETYPE, UPDATETYPE.DELETE):
                     if (userObj.roles.indexOf(roleObj._id) >= 0) {
-                        const roles =userObj.roles as string[];
-                            let currentRoles = roles.filter(v => v.toString() !== roleObj._id.toString());
+                        const roles = userObj.roles as string[];
+                        let currentRoles = roles.filter(v => v.toString() !== roleObj._id.toString());
                         Logger.log(currentRoles, roleId);
                         userObj.roles = currentRoles;
                     }

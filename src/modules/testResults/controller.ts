@@ -1,10 +1,12 @@
 import { Application, Request, Response } from "express";
-import { validateCreationDataKeys, validateCreationDataValues, TestResultRequiredFields, ITest } from "../utility";
+import { validateCreationDataKeys, validateCreationDataValues, TestResultRequiredFields, ITest, EmailMessageOptions, getStudentUserEmailTemplate, IStudentUserEmailTemplate, getUserFullName, getTestResultEmailTemplate, ITestResultEmailTemplate } from "../utility";
+import { IUser } from './../utility';
 
 
 export default function UserController(app: Application) {
     const Logger = app.appLogger;
     const DB = app.appDB;
+    const AppEvents = app.appEvents;
 
     const getTestResults = async function (req: Request, res: Response) {
         try {
@@ -73,7 +75,11 @@ export default function UserController(app: Application) {
             if (validateKeys.length > 0 || validateValues.length > 0) throw new Error(`missing properties: ${validateKeys.length === 0 ? 0 : validateKeys.join(',')} ; invalid values: ${validateValues.length === 0 ? 0 : validateValues.join(',')}`);
 
             //ensure student take test once
-            const dbTest: ITest = await DB.models.Test.findOne({ _id: test }, { answers: 1 })
+            const dbTest: ITest = await DB.models.Test
+                .findOne({ _id: test }, { answers: 1, category: 1, creator: 1 })
+                .populate('category', { roleName: 1 })
+                .populate('creator');
+
 
 
             const correctAnswers = dbTest.answers as string[];
@@ -81,12 +87,52 @@ export default function UserController(app: Application) {
             const score = getScore(markedAnswers, questionCount);
             const newTestResult = new DB.models.TestResult({ test, user, questionCount, markedAnswers, score, answers });
             const dbNewTest = await newTestResult.save();
+
+            //send email to Student| User and also to the TestCreator
+            const eTestTaker = req.currentUser?.data;
+            const eTestTakerEmail = eTestTaker.profile.email;
+            const eTestCreator = dbTest.creator as { _id: String, profile: { email: String }, firstName: String, lastName: String };
+            const eTestCreatorEmail = eTestCreator.profile.email;
+            const eDbTestCategory = dbTest.category as { _id: String, roleName: String };
+
+            //Student|User
+            const opt: EmailMessageOptions = {
+                subject: `Test Evaluation`,
+                to: [eTestTakerEmail],
+                text: "",
+                html: getStudentUserEmailTemplate({
+                    recipient: {
+                        fullName: getUserFullName(eTestTaker)
+                    },
+                    testResult: { score: score, categoryName: eDbTestCategory.roleName }
+                } as IStudentUserEmailTemplate),
+                attachment: []
+            };
+            AppEvents.emit("sendEmail", opt)
+
+            //TestCreator
+            const optT: EmailMessageOptions = {
+                subject: `Test Evaluation Notification`,
+                to: [eTestCreatorEmail as string],
+                text: "",
+                html: getTestResultEmailTemplate({
+                    recipient: {
+                        fullName: getUserFullName(eTestCreator as IUser)
+                    },
+                    testResult: {
+                        fullName: getUserFullName(eTestTaker), categoryName: eDbTestCategory.roleName
+                    }
+                } as ITestResultEmailTemplate),
+                attachment: []
+            };
+            AppEvents.emit("sendEmail", optT)
+
             res.json({ message: `your test was successfully marked and stored`, data: newTestResult })
 
         } catch (e) {
             let msg = null;
             if (e.code === 11000) msg = `you cannot submit the same test twice! `;
-            Logger.error(msg + e.message  || e.message || e)
+            Logger.error(msg + e.message || e.message || e)
             return res.status(400).json({ message: msg || e.message || e, data: [] })
         }
     }

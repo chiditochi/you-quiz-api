@@ -1,3 +1,69 @@
+ Notifications
+ 1. Register 
+    send notification to User and Admin|Manager
+ 2. Test & Question Creation 
+    send notification to creator
+ 3. TestResult 
+    send notification to TestCreator  & Student|User 
+
+Register Template 
+Dear { fullName of Admin| Manager},
+{ user fullName} with email has registered as a { userrole type }
+Regards
+
+TestQuestion Template 
+Dear { fullName of test creator},
+You just created a { if timed, duration minutes} test in category { testCategory } with {questionCount} questions.
+Regards
+
+TestResult Template for Student|User
+Dear { fullName },
+Thanks for taking the { categoryName } test.
+You scored { score }.
+Regards
+
+TestResult Template for Teacher ie TestCreator
+Dear { fullName },
+{ fullName of Student|User} has taken the { categoryName } test.
+Regards
+
+ ------------------------------------------------------------
+            const opt: EmailMessageOptions = {
+                subject: `Registration`,
+                to: [''],
+                text: "",
+                html: getRegisterEmailTemplate({
+                    user: {
+                        fullName: getUserFullName(newDBUser),
+                        email: newDBUser.profile.email,
+                        roleName: getEnumValue(USERROLE, roles)
+                    }
+                } as IRegisterEmailTemplate),
+                attachment: []
+            };
+            AppEvents.emit("sendRegisterEmail", opt)
+------------------------------------------------------------
+
+     const opt: EmailMessageOptions = {
+        subject: `${APP_NAME} APP`,
+        to: ['chiditochi@yahoo.com', 'alasoharriet06@gmail.com'],
+        text: "",
+        html: `
+        Dear Lord, <br/>
+        You are God and will always be<br/>
+        Lord bless and give Harriet and I peace.<br/>
+        Hear our prayers this day.<br/>
+        Amen!
+        `,
+        attachment: [{
+            path: path.join(__dirname, 'assets', 'you-quiz-question-template.xlsx'),
+            type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            name: `${APP_NAME}-Template.xlsx`
+        }]
+    };
+    //app.appEvents.emit('sendEmail', opt);
+
+ --------------------------------------------------------------------------------
             const validateKeys = validateCreationDataKeys(Object.keys(user), requiredFields)
             const validateValues = validateCreationDataValues(user, requiredFields);
 
