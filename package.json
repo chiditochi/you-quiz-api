@@ -42,7 +42,7 @@
     "exceljs-lightweight": "^1.14.0",
     "express": "^4.17.1",
     "formidable": "^1.2.2",
-    "jsonwebtoken": "^8.5.1",
+    "jsonwebtoken": "^9.0.0",
     "moment": "^2.27.0",
     "mongoose": "^5.9.27",
     "morgan": "^1.10.0",
